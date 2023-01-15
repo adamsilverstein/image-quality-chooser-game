@@ -14,7 +14,14 @@
  *
  */
 function image_quality_chooser_game_display() {
-	$images = image_quality_chooser_game_get_images();
+	$game_date = image_quality_chooser_get_game_data();
+
+	// Generate images if missing.
+	if ( empty( $game_date ) ) {
+		$game_date = image_quality_chooser_game_generate_images();
+		image_quality_chooser_set_game_data( $game_data );
+	}
+
 	$original = $images['original'];
 	$comparison = $images['comparison'];
 	?>
@@ -28,8 +35,6 @@ function image_quality_chooser_game_display() {
 			</div>
 		</div>
 		<div class="image-quality-chooser-game__controls">
-			<button class="image-quality-chooser-game__vote" data-vote="original" data-original="<?php echo esc_attr( $original['url'] ); ?>" data-comparison="<?php echo esc_attr( $comparison['url'] ); ?>">Original</button>
-			<button class="image-quality-chooser-game__vote" data-vote="comparison" data-original="<?php echo esc_attr( $original['url'] ); ?>" data-comparison="<?php echo esc_attr( $comparison['url'] ); ?>">Comparison</button>
 			<button class="image-quality-chooser-game__vote" data-vote="no-preference" data-original="<?php echo esc_attr( $original['url'] ); ?>" data-comparison="<?php echo esc_attr( $comparison['url'] ); ?>">No Preference</button>
 		</div>
 	</div>

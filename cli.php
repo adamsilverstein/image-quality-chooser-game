@@ -25,11 +25,9 @@ class Create_Test_Images_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <input>
-	 * : The input folder of source images.
+	 * [<input>]
+	 * : The input folder of source images. Default is the `source_images` folder in the plugin directory.
 	 *
-	 * <output>
-	 * : The output folder of test images.
 	 *
 	 * [--quality=<quality>]
 	 * : The quality settings to use. Default: 70,82,84,86,90
@@ -43,55 +41,89 @@ class Create_Test_Images_Command extends WP_CLI_Command {
 	 * [--engine=<engine>]
 	 * : The image engines to use. Default: gd,imagick
 	 *
-	 * [--overwrite]
-	 * : Overwrite existing images.
-	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp image-quality-chooser-game create-test-images /path/to/input /path/to/output
+	 *     wp image-quality-chooser-game create-test-images /path/to/input
 	 *
 	 * @when before_wp_load
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		$input = $args[0];
-		$output = $args[1];
-		$quality = explode( ',', $assoc_args['quality'] ?? '70,82,84,86,90' );
-		$format = explode( ',', $assoc_args['format'] ?? 'jpeg,webp,avif' );
-		$size = explode( ',', $assoc_args['size'] ?? 'thumbnail,medium,large' );
-		$engine = explode( ',', $assoc_args['engine'] ?? 'gd,imagick' );
-		$overwrite = $assoc_args['overwrite'] ?? false;
+		// Set the default.
+		if ( isset( $args[0] ) ) {
+			$input = $args[0];
+		} else {
+			// Default input is the plugin's source_images folder.
 
+
+
+
+		// Update the user with progress: starting processing folder.
+		WP_CLI::line( 'Processing folder: ' . $input );
+
+		// Import the folder of images.
+		image_quality_chooser_game_generate_images( $input );
+
+	}
+}
+
+
+/**
+ * Sideload the images from a folder and add the meta data.
+ *
+ * @sice 1.0.0
+ *
+ * @param string $input The input folder of source images.
+ * @param array $quality The quality settings to use.
+ * @param array $format The image formats to use.
+ * @param array $engine The image engines to use.
+ *
+ */
+function iqcg_sideload_images( $input, $quality, $format, $engine ) {
+
+		// Include the core WP_Image_Editor_GD and WP_Image_Editor_Imagick classes.
+		require_once ABSPATH . 'wp-includes/class-wp-image-editor.php';
+		require_once ABSPATH . 'wp-includes/class-wp-image-editor-imagick.php';
+		require_once ABSPATH . 'wp-includes/class-wp-image-editor-gd.php';
+		require_once(ABSPATH . 'wp-admin/includes/media.php');
+		require_once(ABSPATH . 'wp-admin/includes/file.php');
+		require_once(ABSPATH . 'wp-admin/includes/image.php');
+
+
+		// Iterate over the files in the input folder.
 		$files = glob( $input . '/*' );
 		foreach ( $files as $file ) {
 			$filename = basename( $file );
-			$metadata = wp_get_image_metadata( $file );
-			foreach ( $size as $size_name ) {
-				$size_data = image_get_intermediate_size( $metadata, $size_name );
-				if ( ! $size_data ) {
-					continue;
-				}
-				$size_file = $output . '/' . $size_name . '-' . $filename;
-				foreach ( $quality as $quality_value ) {
-					foreach ( $format as $format_value ) {
-						foreach ( $engine as $engine_value ) {
-							$engine_class = 'WP_Image_Editor_' . ucfirst( $engine_value );
-							if ( ! class_exists( $engine_class ) ) {
-								continue;
-							}
-							$engine = new $engine_class( $file );
-							if ( ! $engine->supports_mime_type( $format_value ) ) {
-								continue;
-							}
-							$engine->load();
-							$engine->set_quality( $quality_value );
-							$engine->save( $size_file . '-' . $quality_value . '-' . $format_value . '.' . $format_value );
+			WP_CLI::line( 'Saving: ' . $filename );
+
+			foreach ( $quality as $quality_value ) {
+				foreach ( $format as $format_value ) {
+					$mime_type = 'image/' . $format_value;
+					foreach ( $engine as $engine_value ) {
+						$engine_class = 'WP_Image_Editor_' . $engine_value;
+
+						// Import the file into the media library.
+						$attachment_id = media_sideload_image( $file, 0, null, 'id' );
+
+						// Check for errors.
+						if ( is_wp_error( $attachment_id ) ) {
+							// Log the error.
+							error_log( $attachment_id->get_error_message() );
+							continue;
 						}
+
+						// Add the meta data to the image.
+						$meta = array(
+							'engine' => $engine_value,
+							'quality' => $quality_value,
+							'format' => $format_value,
+						);
+						wp_update_attachment_metadata( $attachment_id, $meta );
+
 					}
 				}
 			}
 		}
 	}
-}
 
 
 /**
@@ -153,3 +185,7 @@ class Reset_Command extends WP_CLI_Command {
 	 */
 
 }
+
+WP_CLI::add_command( 'image-quality-chooser-game create-test-images', __NAMESPACE__ . '\Create_Test_Images_Command' );
+WP_CLI::add_command( 'image-quality-chooser-game export-results', __NAMESPACE__ . '\Export_Results_Command' );
+WP_CLI::add_command( 'image-quality-chooser-game reset', __NAMESPACE__ . '\Reset_Command' );

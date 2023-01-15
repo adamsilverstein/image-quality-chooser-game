@@ -41,6 +41,11 @@
 	 * Interrupt all front end requests to serve the game instead.
 	 */
 	add_action( 'template_redirect', function() {
+	// only redirect the home (root) route.
+	if ( '/' !== $_SERVER['REQUEST_URI'] ) {
+		return;
+	}
+	// only redirect if not in the admin.
 	if ( ! is_admin() ) {
 		require_once __DIR__ . '/game.php';
 		image_quality_chooser_game_display();

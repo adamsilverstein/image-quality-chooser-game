@@ -14,14 +14,18 @@
  *
  */
 function image_quality_chooser_game_display() {
-	$game_date = image_quality_chooser_get_game_data();
+	$game_data = image_quality_chooser_get_game_data();
 
 	// Generate images if missing.
-	if ( empty( $game_date ) ) {
-		$game_date = image_quality_chooser_game_generate_images();
+	if ( empty( $game_data ) ) {
+		$game_data = image_quality_chooser_game_generate_images();
 		image_quality_chooser_set_game_data( $game_data );
 	}
-
+	if ( empty( $game_data ) ) {
+		return;
+	}
+	var_dump( $game_data );
+	return;
 	$original = $images['original'];
 	$comparison = $images['comparison'];
 	?>

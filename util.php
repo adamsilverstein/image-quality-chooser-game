@@ -8,73 +8,129 @@
 function image_quality_chooser_game_generate_images() {
 	$game_data = array();
 	$folder = plugin_dir_path( dirname( __FILE__ ) . '/source_images' ) . 'source_images';
-	$quality = array( '70','82','84','86','90' );
+	$qualities = array( '70','82','84','86','90' );
 	$formats = array( 'jpeg','webp','avif' );
 	$engines = array( 'GD','Imagick' );
 	$images = glob( $folder . '/*.{jpg,jpeg,png,gif}', GLOB_BRACE );
 	add_filter('https_ssl_verify', '__return_false');
-	foreach ( $images as $image ) {
-		// Sideload the images into the media library using their URLs.
-		$plugin_image_url = plugins_url( 'source_images/' . basename( $image ), plugin_dir_path( __FILE__ ) . 'source_images' );
-		require_once(ABSPATH . 'wp-admin/includes/media.php');
-		require_once(ABSPATH . 'wp-admin/includes/file.php');
-		require_once(ABSPATH . 'wp-admin/includes/image.php');
 
-		// Generate with each supported engine.
-		foreach ( $engines as $engine ) {
+	image_quality_chooser_log_message( 'Image generation running. ');
+	image_quality_chooser_log_message( 'Variation count: ' . count( $qualities ) * count( $engines ) * count( $formats ) );
+	image_quality_chooser_log_message( 'Image count: ' . count( $images ) );
+	$total = count( $qualities ) * count( $engines ) * count( $formats ) * count( $images );
+	$count = 1;
+	// Set the quality for each iteration.
+	foreach ( $qualities as $quality ) {
+		add_filter( 'wp_editor_set_quality', function() use ( $quality ) {
+			return $quality;
+		} );
 
-			// Set the editor engine accordingly.
-			add_filter( 'wp_image_editors', function( $editors ) use ( $engine ) {
-				$editors = array( 'WP_Image_Editor_' .$engine );
-				return $editors;
-			} );
+		// Iterate over each image.
 
-			// Generate each supported test mime type.
-			foreach ( $formats as $format ) {
-				// Set the mime type accordingly.
-				$mime_type = 'image/' . $format;
+		foreach ( $images as $image ) {
 
-				// Skip if the current editor doesn't support the format.
-				if ( ! wp_image_editor_supports( array( 'mime_type' => $mime_type ) ) ) {
-					continue;
-				}
+			// Log image.
+			image_quality_chooser_log_message( 'Image: ' . basename( $image ) );
 
-				add_filter( 'image_editor_output_format', function( $format_mapping ) use ( $mime_type ) {
-					$format_mapping['image/jpeg'] = $mime_type;
-					return $format_mapping;
+			// Sideload the images into the media library using their URLs.
+			$plugin_image_url = plugins_url( 'source_images/' . basename( $image ), plugin_dir_path( __FILE__ ) . 'source_images' );
+			require_once(ABSPATH . 'wp-admin/includes/media.php');
+			require_once(ABSPATH . 'wp-admin/includes/file.php');
+			require_once(ABSPATH . 'wp-admin/includes/image.php');
+
+			// Generate with each supported engine.
+			foreach ( $engines as $engine ) {
+
+				// Log engine.
+				image_quality_chooser_log_message( 'Engine: ' . $engine );
+
+				// Set the editor engine accordingly.
+				add_filter( 'wp_image_editors', function( $editors ) use ( $engine ) {
+					$editors = array( 'WP_Image_Editor_' .$engine );
+					return $editors;
 				} );
-				error_log( "Generating $format image: $plugin_image_url engine: $engine" );
-				$attach_id = media_sideload_image( $plugin_image_url, 0, basename( $image ) . '-' . $format . '-' . $engine, 'id' );
-				$attach_data = wp_get_attachment_metadata( $attach_id );
-				// Log id and data.
-				error_log( "Attachment ID: $attach_id" );
-				error_log( print_r( $attach_data, true ) );
 
-				$game_data[] = array(
-					'attachment_id' => $attach_id,
-					'upload_file'   => $attach_data['file'],
-					'filename'      => $image,
-					'source_mime'   => 'image/jpeg', // Originals are all jpeg.
-					'output_mime'   => $mime_type,
-					'engine'        => $engine,
-					'filesize'      => $attach_data['filesize'],
-					'width'         => $attach_data['width'],
-					'height'        => $attach_data['height'],
-					'sizes'         => array(
-						'thumbnail' => $attach_data['sizes']['thumbnail'],
-						'medium'    => $attach_data['sizes']['medium'],
-						'large'     => $attach_data['sizes']['large'],
-					),
-				);
+				// Generate each supported test mime type.
+				foreach ( $formats as $format ) {
 
-				remove_all_filters( 'image_editor_output_format' );
+					// Log format.
+					image_quality_chooser_log_message( 'Format: ' . $format );
+
+					// Set the mime type accordingly.
+					$mime_type = 'image/' . $format;
+
+					// Skip if the current editor doesn't support the format.
+					if ( ! wp_image_editor_supports( array( 'mime_type' => $mime_type ) ) ) {
+						continue;
+					}
+
+					add_filter( 'image_editor_output_format', function( $format_mapping ) use ( $mime_type ) {
+						$format_mapping['image/jpeg'] = $mime_type;
+						return $format_mapping;
+					} );
+
+					$image_variation = image_quality_chooser_make_name( basename( $image ),  $format,  $engine,  $quality );
+
+					// Log the image variation.
+					image_quality_chooser_log_message( "Image variation $count of $total: $image_variation" );
+					$count++;
+
+					$attach_id = media_sideload_image( $plugin_image_url, 0, $image_variation, 'id' );
+					$attach_data = wp_get_attachment_metadata( $attach_id );
+
+					// Log the image variation data.
+					$game_data[] = array(
+						'attachment_id' => $attach_id,
+						'upload_file'   => $attach_data['file'],
+						'filename'      => $image,
+						'source_mime'   => 'image/jpeg', // Originals are all jpeg.
+						'output_mime'   => $mime_type,
+						'engine'        => $engine,
+						'quality'       => $quality,
+						'filesize'      => $attach_data['filesize'],
+						'width'         => $attach_data['width'],
+						'height'        => $attach_data['height'],
+						'sizes'         => array(
+							'thumbnail' => $attach_data['sizes']['thumbnail'],
+							'medium'    => $attach_data['sizes']['medium'],
+							'large'     => $attach_data['sizes']['large'],
+						),
+					);
+
+					remove_all_filters( 'image_editor_output_format' );
+				}
+				remove_all_filters( 'wp_image_editors' );
 			}
-			remove_all_filters( 'wp_image_editors' );
 		}
+		remove_all_filters( 'wp_editor_set_quality' );
 	}
-	error_log( json_encode( $game_data, JSON_PRETTY_PRINT ) );
 
 	return $game_data;
+}
+
+/**
+ * Make a filename from a base name, format, engine and quality.
+ *
+ * @param string $base_name The base file name.
+ * @param string $size The image size.
+ * @param string $format The image format.
+ * @param string $engine The image editor engine.
+ * @param string $quality The image quality.
+ */
+function image_quality_chooser_make_name( $base_name, $size, $format, $engine, $quality ) {
+	return basename( $base_name, '.jpg' ) . '-' . $size . '-' . str_replace( 'image/', '', $format ) . '-' . strtolower( $engine ) . '-' . $quality;
+}
+
+
+/**
+ * Log helper uses error log or WP_CLI logging depending on context.
+ */
+function image_quality_chooser_log_message( $message ) {
+	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		WP_CLI::log( $message );
+	} else {
+		error_log( $message );
+	}
 }
 
 /**

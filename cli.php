@@ -35,7 +35,15 @@ class Create_Test_Images_Command extends WP_CLI_Command {
 		WP_CLI::line( 'Importing images' );
 
 		// Import the folder of images.
-		image_quality_chooser_game_generate_images( );
+		$game_date = image_quality_chooser_game_generate_images( );
+		if ( ! empty( $game_data ) ) {
+			// Update the user with progress: finished processing folder.
+			WP_CLI::success( 'Imported images' );
+			image_quality_chooser_set_game_data( $game_data );
+		} else {
+			// Update the user with progress: finished processing folder.
+			WP_CLI::error( 'No images imported' );
+		}
 	}
 }
 	/**

@@ -9,7 +9,7 @@ add_action( 'rest_api_init', function() {
 			$comparison_data = json_decode( $request->get_param( 'comparison-data' ), true );
 			$selection       = json_decode( $request->get_param( 'selection' ) );
 			$timestamp       = json_decode( $request->get_param( 'timestamp' ) );
-			$nonce           = json_decode( $request->get_param( 'nonce' ) );
+			$nonce           = $request->get_param( 'nonce' );
 
 			// Validate the nonce.
 			if ( ! wp_verify_nonce( $nonce, 'image-quality-chooser-submission' ) ) {

@@ -53,27 +53,8 @@
 	}
 	} );
 
-/**
- * Register the REST endpoint to collect votes.
- */
-add_action( 'rest_api_init', function() {
-register_rest_route( 'image-quality-chooser-game/v1', '/vote', [
-	'methods'  => 'POST',
-	'callback' => function( WP_REST_Request $request ) {
-	$vote = $request->get_param( 'vote' );
-	$original = $request->get_param( 'original' );
-	$comparison = $request->get_param( 'comparison' );
-	$votes = get_option( 'image-quality-chooser-game-votes', [] );
-	$votes[] = [
-		'vote' => $vote,
-		'original' => $original,
-		'comparison' => $comparison,
-	];
-	update_option( 'image-quality-chooser-game-votes', $votes );
-	return rest_ensure_response( $votes );
-	},
-] );
-	} );
+// Require the REST API file.
+require_once __DIR__ . '/rest.php';
 
 /**
  * Register the WP-CLI commands.

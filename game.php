@@ -25,10 +25,6 @@ function image_quality_chooser_game_display() {
 		return;
 	}
 
-	// Enqueue the game JavaScript in the page footer.
-	wp_enqueue_script( 'image-quality-chooser-game', plugins_url( 'image-quality-chooser-game.js', __FILE__ ), [], '1.0.0', true );
-
-
 	// The top level image game data will be indexed by filename and size.
 	// Each game round will use the same image file and size, with two different variations of quality, engine and format (mime type).
 	$game_image_data = array(
@@ -97,7 +93,6 @@ function image_quality_chooser_game_display() {
 		}
 	}
 
-
 	// Pick a random size for the game. Both images use the same size.
 	$experiment_size = $sizes[ array_rand( $sizes ) ];
 
@@ -155,19 +150,46 @@ function image_quality_chooser_game_display() {
 	image_quality_chooser_log_message( 'left_image_url: ' . $left_image_url );
 	image_quality_chooser_log_message( 'right_image_url: ' . $right_image_url );
 
+
+	wp_enqueue_script( 'image-quality-chooser', plugins_url( '/js/image-quality-chooser-game.js', __FILE__ ), [], '1.0.0', true );
+	wp_enqueue_style( 'image-quality-chooser', plugins_url( '/css/image-quality-chooser-game.css', __FILE__ ), [], '1.0.0' );
+
+	wp_head();
+
+	$game_comparison_data = array(
+		'left_image'          => $left_image,
+		'right_image'         => $right_image,
+		'left_quality'        => $left_quality,
+		'right_quality'       => $right_quality,
+		'left_mime'           => str_replace( 'image/', '', $left_mime ),
+		'right_mime'          => str_replace( 'image/', '', $right_mime ),
+		'left_engine'         => $left_engine,
+		'right_engine'        => $right_engine,
+		'experiment_size'     => $experiment_size,
+		'experiment_filename' => $experiment_filename,
+	);
+
+	// Add a none for the submission.
+	$submission_nonce = wp_create_nonce( 'image-quality-chooser-submission' );
 	?>
+	<div class="image-quality-chooser-game__overlay"></div>
 	<div class="image-quality-chooser-game">
+		<div class="image-quality-chooser-game__experiment-data" data-nonce="<?php echo $submission_nonce; ?>" data-game-comparison="<?php echo htmlspecialchars( json_encode( $game_comparison_data ), ENT_QUOTES, 'UTF-8'); ?>"></div>
+		<div class="image-quality-chooser-game__instructions">
+			Which image do you prefer?
+		</div>
 		<div class="image-quality-chooser-game__images">
-			<div class="image-quality-chooser-game__image">
-				<img src="<?php echo $left_image_url; ?>"  >
-			</div>
-			<div class="image-quality-chooser-game__image">
-				<img src="<?php echo $right_image_url; ?>"  />
-			</div>
+			<img src="<?php echo $left_image_url; ?>"
+				data-image="<?php echo $left_image ?>"
+			>
+			<img src="<?php echo $right_image_url; ?>"
+			data-image="<?php echo $right_image ?>"
+			>
 		</div>
 		<div class="image-quality-chooser-game__controls">
-			<button class="image-quality-chooser-game__vote" data-vote="no-preference">No Preference</button>
+			<button class="image-quality-chooser-game__vote" data-image="no-preference">No Preference</button>
 		</div>
 	</div>
 	<?php
+	wp_footer();
 }

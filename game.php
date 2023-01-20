@@ -98,30 +98,45 @@ function image_quality_chooser_game_display() {
 		'large',
 	);
 
+
+	error_log( "sizes:" . json_encode( $sizes, JSON_PRETTY_PRINT ) );
+
+	// Log time so far.
+	$so_far_time = microtime( true );
+	error_log( "Time so far: " . ( $so_far_time - $start_time ) );
+
 	// Pick a random size for the game. Both images use the same size.
 	$experiment_size = $sizes[ array_rand( $sizes ) ];
 
+
+
 	// Try several times to pick random files for the game.
 	$tries = 5;
+	// Pick a random file for the game.
+	$filenames = array_keys( $game_image_data );
 	while ( $tries-- > 0 ) {
 		$left_image = '';
 		$right_image = '';
 
-		// Pick a random file for the game.
-		$filenames = array_keys( $game_image_data );
 		$experiment_filename = $filenames[ array_rand( $filenames ) ];
+
 
 		// Pick the left and right images mime types..
 		$left_mime  = $mimes[ array_rand( $mimes ) ];
 		$right_mime = $mimes[ array_rand( $mimes ) ];
 
-		// Pick the left and right images engines.
-		$left_engine  = $engines[ array_rand( $engines ) ];
-		$right_engine = $engines[ array_rand( $engines ) ];
-
 		// Pick the left and right quality.
 		$left_quality  = $qualities[ array_rand( $qualities ) ];
 		$right_quality = $qualities[ array_rand( $qualities ) ];
+
+		// Avoid too similar images.
+		if ( $left_mime === $right_mime && abs( $left_quality - $right_quality ) < 5 ) {
+			continue;
+		}
+
+		// Pick the left and right images engines.
+		$left_engine  = $engines[ array_rand( $engines ) ];
+		$right_engine = $engines[ array_rand( $engines ) ];
 
 		// Calculate the filenames for the left and right images.
 		$left_name  = image_quality_chooser_make_name( $experiment_filename, $experiment_size, $left_engine, $left_mime, $left_quality );

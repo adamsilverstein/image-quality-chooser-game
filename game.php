@@ -76,11 +76,6 @@ function image_quality_chooser_game_display() {
 
 			$game_image_data[ $filename ][ $size_name ][ $engine ][ $mime ][ $quality ] = $image_data['attachment_id'];
 
-			// Add and set size, engine or format.
-			if ( ! in_array( $size_name, $sizes, true ) ) {
-				$sizes[] = $size_name;
-			}
-
 			if ( ! in_array( $image_data['engine'], $engines, true ) ) {
 				$engines[] = $image_data['engine'];
 			}
@@ -96,6 +91,12 @@ function image_quality_chooser_game_display() {
 
 		}
 	}
+
+	$sizes = array(
+		// 'thumbnail',
+		'medium',
+		'large',
+	);
 
 	// Pick a random size for the game. Both images use the same size.
 	$experiment_size = $sizes[ array_rand( $sizes ) ];

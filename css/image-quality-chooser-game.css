@@ -41,3 +41,15 @@ button {
 	opacity: 90%;
 	display: none;
 }
+
+.image-quality-chooser-game__results {
+	text-align: center;
+	padding: 0 10px;
+	display: none;
+}
+
+.image-quality-chooser-game__meta_header {
+	font-size: larger;
+	font-weight: bold;
+}
+

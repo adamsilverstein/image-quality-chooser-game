@@ -69,7 +69,12 @@ class Create_Test_Images_Command extends WP_CLI_Command {
 		 * @when before_wp_load
 		 */
 		public function __invoke( $args, $assoc_args ) {
-			$data = image_quality_chooser_game_get_results();
+			$data = get_option( 'image-quality-chooser-game-choices', array() );
+			$fp = fopen( $args[0], 'w' );
+			foreach ( $data as $fields ) {
+				fputcsv( $fp, $fields );
+			}
+			fclose( $fp );
 
 		}
 	}

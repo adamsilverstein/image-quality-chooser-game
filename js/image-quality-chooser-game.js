@@ -22,9 +22,7 @@
 
 			console.log( "data:", data );
 
-			// Show the overlay during the submission.
-			var overlay = document.querySelector('.image-quality-chooser-game__overlay');
-			overlay.style.display = 'block';
+			showOverlay();
 
 			// Send the data to the REST endpoint.
 			var xhr = new XMLHttpRequest();
@@ -35,15 +33,19 @@
 
 			// Handle success and failure.
 			xhr.onload = function () {
-				overlay.style.display = 'none';
+				hideOverlay();
 				if ( xhr.status >= 200 && xhr.status < 400 ) {
 					// Success!
 					var response = JSON.parse( xhr.responseText );
 					console.log( "response:", response );
 
-					// Insert and display the results, which includes a button to restart the game.
+					showResults();
 
-					// After 1 minute, reset the display to restart the game
+					// After 1 minute, reload the display to restart the game
+					setTimeout( function () {
+						location.reload();
+					}, 60000 );
+
 				} else {
 					// We reached our target server, but it returned an error
 					console.log( "response:", xhr.responseText );
@@ -52,4 +54,35 @@
 		}
 	} );
 
+	var overlay = document.querySelector('.image-quality-chooser-game__overlay');
+
+	// Function to show the overlay.
+	function showOverlay() {
+		overlay.style.display = 'block';
+	}
+
+	// Function to hide the overlay.
+	function hideOverlay() {
+		overlay.style.display = 'none';
+	}
+
+	// Function to show all of the results.
+	function showResults() {
+		// Select all results from elements with the image-quality-chooser-game__results class.
+		var results = document.querySelectorAll('.image-quality-chooser-game__results');
+		for ( var i = 0; i < results.length; i++ ) {
+			results[ i ].style.display = 'block';
+		}
+
+		// Also, hide the controls.
+		var controls = document.querySelector('.image-quality-chooser-game__controls');
+		controls.style.display = 'none';
+
+		// Also hide the instructions
+		var instructions = document.querySelector('.image-quality-chooser-game__instructions');
+		instructions.style.display = 'none';
+
+	}
+
 } )()
+

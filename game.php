@@ -14,6 +14,10 @@
  *
  */
 function image_quality_chooser_game_display() {
+
+	// Time the function load.
+	$start_time = microtime( true );
+
 	$game_data = image_quality_chooser_get_game_data();
 
 	// Generate images if missing.
@@ -143,6 +147,10 @@ function image_quality_chooser_game_display() {
 
 	}
 
+	// 2nd log time so far.
+	$so_far_time = microtime( true );
+	error_log( "Time so far 2: " . ( $so_far_time - $start_time ) );
+
 	$left_image_url = wp_get_attachment_image_url( $left_image, $experiment_size );
 	$right_image_url = wp_get_attachment_image_url( $right_image, $experiment_size );
 
@@ -192,4 +200,7 @@ function image_quality_chooser_game_display() {
 	</div>
 	<?php
 	wp_footer();
+	// Log time to end.
+	$end_time = microtime( true );
+	error_log( "Time to end: " . ( $end_time - $start_time ) );
 }

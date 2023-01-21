@@ -14,6 +14,17 @@ function image_quality_chooser_game_generate_images() {
 	$images = glob( $folder . '/*.{jpg,jpeg,png,gif}', GLOB_BRACE );
 	add_filter('https_ssl_verify', '__return_false');
 
+	// Restrict core sub size generation to the sizes we need for the game.
+	$game_sizes = array(
+		//'thumbnail',
+		'medium',
+		'large',
+	);
+	add_filter( 'intermediate_image_sizes_advanced', function( $sizes ) use ( $game_sizes ) {
+		return array_intersect_key( $sizes, array_flip( $game_sizes ) );
+	} );
+
+
 	image_quality_chooser_log_message( 'Image generation running. ');
 	image_quality_chooser_log_message( 'Variation count: ' . count( $qualities ) * count( $engines ) * count( $formats ) );
 	image_quality_chooser_log_message( 'Image count: ' . count( $images ) );

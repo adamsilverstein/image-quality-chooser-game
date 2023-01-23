@@ -5,13 +5,14 @@
 
 	// When the user clicks an img or button element, send the selection data
 	// to the REST endpoint.
+	var voted = false;
 
 	// Listen for clicks on img or button elements.
-	document.addEventListener('click', function (event) {
+	document.addEventListener( 'click', function (event) {
 		var target = event.target;
-		if ( 'IMG' === target.tagName || 'BUTTON' === target.tagName ) {
+		if ( ( 'IMG' === target.tagName || 'BUTTON' === target.tagName ) && ! voted ) {
 			// Get the game data from the image-quality-chooser-game__experiment-data element.
-			var dataTarget = document.querySelector('.image-quality-chooser-game__experiment-data');
+			var dataTarget = document.querySelector( '.image-quality-chooser-game__experiment-data' );
 
 			var data = {
 				'selection'      : target.getAttribute('data-image'),
@@ -19,8 +20,6 @@
 				'timestamp'      : new Date().getTime(),
 				'nonce'          : dataTarget.getAttribute('data-nonce'),
 			};
-
-			console.log( "data:", data );
 
 			showOverlay();
 
@@ -41,6 +40,10 @@
 
 					showResults();
 
+					// Mark this image as the winner by marking the click target's parent with the `image-quality-chooser-game__winner` class.
+					target.parentNode.classList.add( 'image-quality-chooser-game__winner' );
+
+
 					// After 1 minute, reload the display to restart the game
 					setTimeout( function () {
 						location.reload();
@@ -50,6 +53,9 @@
 					// We reached our target server, but it returned an error
 					console.log( "response:", xhr.responseText );
 				}
+
+				// Mark as having voted, preventing re-submission.
+				voted = true;
 			}
 		}
 	} );
@@ -81,6 +87,11 @@
 		// Also hide the instructions
 		var instructions = document.querySelector('.image-quality-chooser-game__instructions');
 		instructions.style.display = 'none';
+
+		// Mark the game (image-quality-chooser-game class) as complete.
+		var game = document.querySelector('.image-quality-chooser-game' );
+		game.classList.add( 'image-quality-chooser-game__complete' );
+
 
 	}
 

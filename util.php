@@ -6,39 +6,59 @@
  * @return void
  */
 function image_quality_chooser_game_generate_images() {
-	$game_data = array();
+	$game_data = image_quality_chooser_get_game_data();
+	$completed_images = ( empty( $ci = json_decode( get_option( 'image_quality_chooser_completed_images' ) ) ) ) ? array() : $ci;
+
 	$folder = plugin_dir_path( dirname( __FILE__ ) . '/source_images' ) . 'source_images';
-	$qualities = array( '70','82','84','86','90' );
-	$formats = array( 'jpeg','webp','avif' );
-	$engines = array( 'GD','Imagick' );
 	$images = glob( $folder . '/*.{jpg,jpeg,png,gif}', GLOB_BRACE );
+	if ( sizeof( $completed_images ) === sizeof( $images ) ) {
+		return $game_data;
+	}
+	$qualities = array(
+		'70',
+		'82',
+		'84',
+		'86',
+		'90',
+	);
+	$formats = array(
+		'jpeg',
+		'webp',
+		// 'avif',
+	);
+	$engines = array(
+		'GD',
+		//'Imagick',
+	);
 	add_filter('https_ssl_verify', '__return_false');
 
 	// Restrict core sub size generation to the sizes we need for the game.
-	$game_sizes = array(
-		//'thumbnail',
-		'medium',
-		'large',
-	);
+	$game_sizes = image_quality_chooser_get_sizes();
+
 	add_filter( 'intermediate_image_sizes_advanced', function( $sizes ) use ( $game_sizes ) {
 		return array_intersect_key( $sizes, array_flip( $game_sizes ) );
 	} );
-
 
 	image_quality_chooser_log_message( 'Image generation running. ');
 	image_quality_chooser_log_message( 'Variation count: ' . count( $qualities ) * count( $engines ) * count( $formats ) );
 	image_quality_chooser_log_message( 'Image count: ' . count( $images ) );
 	$total = count( $qualities ) * count( $engines ) * count( $formats ) * count( $images );
 	$count = 1;
-	// Set the quality for each iteration.
-	foreach ( $qualities as $quality ) {
-		add_filter( 'wp_editor_set_quality', function() use ( $quality ) {
-			return $quality;
-		} );
+	$remaining = $total - count( $completed_images );
 
-		// Iterate over each image.
 
-		foreach ( $images as $image ) {
+	foreach ( $images as $image ) {
+
+		// Skip already completed images.
+		if ( in_array( $image, $completed_images ) ) {
+			error_log( "skipping $image" );
+			continue;
+		}
+		// Set the quality for each iteration.
+		foreach ( $qualities as $quality ) {
+			add_filter( 'wp_editor_set_quality', function() use ( $quality ) {
+				return $quality;
+			} );
 
 			// Log image.
 			image_quality_chooser_log_message( 'Image: ' . basename( $image ) );
@@ -63,7 +83,6 @@ function image_quality_chooser_game_generate_images() {
 
 				// Generate each supported test mime type.
 				foreach ( $formats as $format ) {
-
 					// Log format.
 					image_quality_chooser_log_message( 'Format: ' . $format );
 
@@ -80,10 +99,10 @@ function image_quality_chooser_game_generate_images() {
 						return $format_mapping;
 					} );
 
-					$image_variation = image_quality_chooser_make_name( basename( $image ),  $format,  $engine,  $quality );
+					$image_variation = image_quality_chooser_make_name( basename( $image ), 'orig', $format,  $engine,  $quality );
 
 					// Log the image variation.
-					image_quality_chooser_log_message( "Image variation $count of $total: $image_variation" );
+					image_quality_chooser_log_message( sprintf( 'Image variation %s of %s: %s', $count, ( $total-count($completed_images) ), $image_variation ) );
 					$count++;
 
 					$attach_id = media_sideload_image( $plugin_image_url, 0, $image_variation, 'id' );
@@ -102,8 +121,8 @@ function image_quality_chooser_game_generate_images() {
 						'width'         => $attach_data['width'],
 						'height'        => $attach_data['height'],
 						'sizes'         => array(
-							'thumbnail' => $attach_data['sizes']['thumbnail'],
-							'medium'    => $attach_data['sizes']['medium'],
+							//'thumbnail' => $attach_data['sizes']['thumbnail'],
+							//'medium'    => $attach_data['sizes']['medium'],
 							'large'     => $attach_data['sizes']['large'],
 						),
 					);
@@ -112,8 +131,22 @@ function image_quality_chooser_game_generate_images() {
 				}
 				remove_all_filters( 'wp_image_editors' );
 			}
+			remove_all_filters( 'wp_editor_set_quality' );
+
+
+			if ( ! in_array( $image, $completed_images ) ) {
+
+				// After each image is processed, record the progress in a transient. If the process
+				// is interrupted, the transient will be used to resume the process.
+				$completed_images[] = $image;
+
+				// Log storage.
+				image_quality_chooser_log_message( 'Save completed images: ' . count( $completed_images ) );
+				update_option( 'image_quality_chooser_completed_images', json_encode( $completed_images ) );
+
+				image_quality_chooser_set_game_data( $game_data );
+			}
 		}
-		remove_all_filters( 'wp_editor_set_quality' );
 	}
 
 	return $game_data;
@@ -172,6 +205,22 @@ function image_quality_chooser_reset_game_data() {
 	delete_option( 'image_quality_chooser_game_settings' );
 }
 
+/**
+ * Get the sizes to use for the game.
+ */
+function image_quality_chooser_get_sizes() {
+	return array(
+		// 'thumbnail',
+		// 'medium',
+		'large',
+	);
+}
 
+/**
+ * Return the nonce key.
+ */
+function image_quality_chooser_get_nonce_key() {
+	return 'image_quality_chooser-submission';
+}
 
 

@@ -18,16 +18,7 @@ function image_quality_chooser_game_display() {
 	// Time the function load.
 	$start_time = microtime( true );
 
-	$game_data = image_quality_chooser_get_game_data();
-
-	// Generate images if missing.
-	if ( empty( $game_data ) ) {
-		$game_data = image_quality_chooser_game_generate_images();
-		image_quality_chooser_set_game_data( $game_data );
-	}
-	if ( empty( $game_data ) ) {
-		return;
-	}
+	$game_data = image_quality_chooser_game_generate_images();
 
 	// The top level image game data will be indexed by filename and size.
 	// Each game round will use the same image file and size, with two different variations of quality, engine and format (mime type).
@@ -92,11 +83,7 @@ function image_quality_chooser_game_display() {
 		}
 	}
 
-	$sizes = array(
-		// 'thumbnail',
-		'medium',
-		'large',
-	);
+	$sizes = image_quality_chooser_get_sizes();
 
 
 	error_log( "sizes:" . json_encode( $sizes, JSON_PRETTY_PRINT ) );
@@ -194,14 +181,14 @@ function image_quality_chooser_game_display() {
 	);
 
 	// Add a none for the submission.
-	$submission_nonce = wp_create_nonce( 'image-quality-chooser-submission' );
+	$submission_nonce = wp_create_nonce( image_quality_chooser_get_nonce_key() );
 
 	// After the submission, reveal the image meta data.
 	?>
 	<div class="image-quality-chooser-game__overlay"></div>
 	<div class="image-quality-chooser-game">
 		<div class="image-quality-chooser-game__meta_header image-quality-chooser-game__results">
-			<?php echo sprintf( 'Image details for %s, Size: %s', $experiment_filename, $experiment_size ); ?>
+			Image details
 		</div>
 		<div class="image-quality-chooser-game__experiment-data" data-nonce="<?php echo $submission_nonce; ?>" data-game-comparison="<?php echo htmlspecialchars( json_encode( $game_comparison_data ), ENT_QUOTES, 'UTF-8'); ?>"></div>
 		<div class="image-quality-chooser-game__instructions">
@@ -210,19 +197,19 @@ function image_quality_chooser_game_display() {
 		<div class="image-quality-chooser-game__images">
 			<div class="image-quality-chooser-game__image">
 				<div class="image-quality-chooser-game__results">
-					<?php echo sprintf( 'Engine: %s, Quality: %s, Mime: %s', $left_engine, $left_quality, $left_mime ); ?>
+					<?php echo sprintf( 'Image Type: %s, Quality: %s, Engine: %s', ucfirst( str_replace( 'image/', '', $left_mime ) ), $left_quality, $left_engine ); ?>
 				</div>
-				<img src="<?php echo $left_image_url; ?>" data-image="<?php echo $left_image ?>" >
+				<img src="<?php echo $left_image_url; ?>" data-image="<?php echo $left_image ?>" class="image-quality-chooser-game__image_tag">
 			</div>
 			<div class="image-quality-chooser-game__image">
 				<div class="image-quality-chooser-game__results">
-					<?php echo sprintf( 'Engine: %s, Quality: %s, Mime: %s', $right_engine, $right_quality, str_replace( 'image/', '', $right_mime ) );  ?>
+					<?php echo sprintf( 'Image Type: %s, Quality: %s, Engine: %s', ucfirst( str_replace( 'image/', '', $right_mime ) ), $right_quality, $right_engine ); ?>
 				</div>
-				<img src="<?php echo $right_image_url; ?>" data-image="<?php echo $right_image ?>" >
+				<img src="<?php echo $right_image_url; ?>" data-image="<?php echo $right_image ?>" class="image-quality-chooser-game__image_tag">
 			</div>
 		</div>
 		<div class="image-quality-chooser-game__results">
-			Download the Performance Lab Plugin to learn more!<br />
+			Download the Performance Lab Plugin to test!<br />
 			<img src="<?php echo plugins_url( '/images/download-the-performance-lab-plugin-small.png', __FILE__ ) ?>" width=150 height=150>
 		</div>
 		<div class="image-quality-chooser-game__controls">

@@ -12,7 +12,7 @@ add_action( 'rest_api_init', function() {
 			$nonce           = $request->get_param( 'nonce' );
 
 			// Validate the nonce.
-			if ( ! wp_verify_nonce( $nonce, 'image-quality-chooser-submission' ) ) {
+			if ( ! wp_verify_nonce( $nonce, image_quality_chooser_get_nonce_key() ) ) {
 				return new WP_Error( 'invalid-nonce', __( 'Invalid nonce.', 'image-quality-chooser' ), array( 'status' => 403 ) );
 			}
 

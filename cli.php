@@ -39,7 +39,6 @@ class Create_Test_Images_Command extends WP_CLI_Command {
 		if ( ! empty( $game_data ) ) {
 			// Update the user with progress: finished processing folder.
 			WP_CLI::success( 'Imported images' );
-			image_quality_chooser_set_game_data( $game_data );
 		} else {
 			// Update the user with progress: finished processing folder.
 			WP_CLI::error( 'No images imported' );

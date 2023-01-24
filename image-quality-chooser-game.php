@@ -41,16 +41,13 @@
 	 * Interrupt all front end requests to serve the game instead.
 	 */
 	add_action( 'template_redirect', function() {
-	// only redirect the home (root) route.
-	if ( '/' !== $_SERVER['REQUEST_URI'] ) {
-		return;
-	}
-	// only redirect if not in the admin.
-	if ( ! is_admin() ) {
+		// only redirect the home (root) route.
+		if ( '/' !== $_SERVER['REQUEST_URI'] ) {
+			return;
+		}
 		require_once __DIR__ . '/game.php';
 		image_quality_chooser_game_display();
 		exit;
-	}
 	} );
 
 // Require the REST API file.
@@ -63,5 +60,5 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 require_once __DIR__ . '/cli.php';
 }
 
-//Require the util file.
+// Require the util file.
 require_once __DIR__ . '/util.php';

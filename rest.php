@@ -10,19 +10,16 @@ add_action( 'rest_api_init', function() {
 			$selection       = json_decode( $request->get_param( 'selection' ) );
 			$timestamp       = json_decode( $request->get_param( 'timestamp' ) );
 			$nonce           = $request->get_param( 'nonce' );
+			error_log( "is_user_logged_in:" . json_encode( is_user_logged_in(), JSON_PRETTY_PRINT ) );
 
 			// Validate the nonce.
-			if ( ! wp_verify_nonce( $nonce, image_quality_chooser_get_nonce_key() ) ) {
+			if ( ! is_user_logged_in() && ! wp_verify_nonce( $nonce, image_quality_chooser_get_nonce_key() ) ) {
 				return new WP_Error( 'invalid-nonce', __( 'Invalid nonce.', 'image-quality-chooser' ), array( 'status' => 403 ) );
 			}
 
 			// Record the comparison data.
 			$choices = get_option( 'image-quality-chooser-game-choices', array() );
-			error_log( "selection:" . json_encode( $selection, JSON_PRETTY_PRINT ) );
-			error_log( "timestamp:" . json_encode( $timestamp, JSON_PRETTY_PRINT ) );
 
-			error_log( print_r( $comparison_data, true ) );
-			error_log( $comparison_data['left_image'] );
 			$current_choice = array(
 				'selection'     => $selection,
 				'timestamp'     => $timestamp,

@@ -102,7 +102,7 @@ function image_quality_chooser_game_generate_images() {
 					$image_variation = image_quality_chooser_make_name( basename( $image ), 'orig', $format,  $engine,  $quality );
 
 					// Log the image variation.
-					image_quality_chooser_log_message( sprintf( 'Image variation %s of %s: %s', $count, ( $total-count($completed_images) ), $image_variation ) );
+					image_quality_chooser_log_message( sprintf( 'Image variations %s remaining of %s: %s', $remaining, $total, $image_variation ) );
 					$count++;
 
 					$attach_id = media_sideload_image( $plugin_image_url, 0, $image_variation, 'id' );

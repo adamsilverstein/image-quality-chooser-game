@@ -181,10 +181,10 @@ function image_quality_chooser_log_message( $message ) {
  * Set the game data.
  *
  * @param array $game_data The game data.
- * @return void
+ * @return bool True if the value was updated, false otherwise.
  */
 function image_quality_chooser_set_game_data( $game_data ) {
-	update_option( 'image_quality_chooser_game_settings', $game_data );
+	return update_option( 'image_quality_chooser_game_data', $game_data );
 }
 
 /**
@@ -193,7 +193,7 @@ function image_quality_chooser_set_game_data( $game_data ) {
  * @return array $game_data The game data.
  */
 function image_quality_chooser_get_game_data() {
-	return get_option( 'image_quality_chooser_game_settings' );
+	return get_option( 'image_quality_chooser_game_data' );
 }
 
 /**
@@ -202,7 +202,7 @@ function image_quality_chooser_get_game_data() {
  * @return void
  */
 function image_quality_chooser_reset_game_data() {
-	delete_option( 'image_quality_chooser_game_settings' );
+	return delete_option( 'image_quality_chooser_game_data' );
 }
 
 /**
@@ -215,6 +215,34 @@ function image_quality_chooser_get_sizes() {
 		'large',
 	);
 }
+
+/**
+ * Set the game choices.
+ *
+ * @param array $choices The choices.
+ * @return bool True if the value was updated, false otherwise.
+ */
+function image_quality_chooser_set_game_choices( $choices ) {
+	return update_option( 'image-quality-chooser-game-choices', $choices );
+}
+
+/**
+ * Get the game choices.
+ */
+function image_quality_chooser_get_game_choices() {
+	return get_option( 'image-quality-chooser-game-choices' );
+}
+
+/**
+ * Reset the game choices.
+ *
+ * @return void
+ */
+function image_quality_chooser_reset_game_choices() {
+	return delete_option( 'image-quality-chooser-game-choices' );
+}
+
+
 
 /**
  * Return the nonce key.

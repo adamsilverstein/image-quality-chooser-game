@@ -62,3 +62,6 @@ require_once __DIR__ . '/cli.php';
 
 // Require the util file.
 require_once __DIR__ . '/util.php';
+
+// Require the settings screen file.
+require_once __DIR__ . '/settings.php';

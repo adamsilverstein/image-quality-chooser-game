@@ -140,7 +140,7 @@ function image_quality_chooser_game_display() {
 		}
 	}
 
-	// 2nd log time so far.
+	// Log time so far.
 	$so_far_time = microtime( true );
 
 
@@ -165,13 +165,12 @@ function image_quality_chooser_game_display() {
 	);
 
 	// Add a none for the submission.
-	$submission_nonce = wp_create_nonce( image_quality_chooser_get_nonce_key() );
 	$wp_nonce = wp_create_nonce( 'wp_rest' );
 
 	// After the submission, reveal the image meta data.
 	?><html lang="en-US">
 	<head>
-		<?php 	wp_head(); ?>
+		<?php wp_head(); ?>
 	</head>
 	<body>
 	<div class="image-quality-chooser-game__overlay"></div>
@@ -179,7 +178,7 @@ function image_quality_chooser_game_display() {
 		<div class="image-quality-chooser-game__meta_header image-quality-chooser-game__results">
 			Image details
 		</div>
-		<div class="image-quality-chooser-game__experiment-data" data-wp-nonce="<?php echo $wp_nonce ?>" data-nonce="<?php echo $submission_nonce; ?>" data-game-comparison="<?php echo htmlspecialchars( json_encode( $game_comparison_data ), ENT_QUOTES, 'UTF-8'); ?>"></div>
+		<div class="image-quality-chooser-game__experiment-data" data-wp-nonce="<?php echo $wp_nonce ?>" data-game-comparison="<?php echo htmlspecialchars( json_encode( $game_comparison_data ), ENT_QUOTES, 'UTF-8'); ?>"></div>
 		<div class="image-quality-chooser-game__instructions">
 			Which image do you prefer?
 		</div>

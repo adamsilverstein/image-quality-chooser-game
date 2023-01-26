@@ -19,9 +19,9 @@ function image_quality_chooser_game_settings_page() {
 	<div class="wrap image_quality_chooser_game_settings" data-wp-nonce="<?php echo $wp_nonce ?>">
 		<h1>Image Quality Chooser Game</h1>
 		<p>Choose an action:</p>
-		<button data-action="export" class="button">Export Results</button>
-		<button data-action="setup" class="button">Setup Images</button>
-		<button data-action="reset" class="button">Reset Results</button>
+		<button data-action="export" class="button">Export</button>
+		<button data-action="setup" class="button">Setup</button>
+		<button data-action="reset" class="button">Reset</button>
 	</div>
 	<?php
 }

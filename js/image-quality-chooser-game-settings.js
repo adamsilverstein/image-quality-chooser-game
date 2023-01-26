@@ -11,7 +11,7 @@
 
 			// Send an ajax request with the action.
 			var xhr = new XMLHttpRequest();
-			xhr.open( 'POST', 'wp-json/image-quality-chooser-game/v1/settings', true );
+			xhr.open( 'POST', '/wp-json/image-quality-chooser-game/v1/settings', true );
 
 			xhr.setRequestHeader( 'Content-Type', 'application/json' );
 

@@ -20,6 +20,10 @@ function image_quality_chooser_game_display() {
 
 	$game_data = image_quality_chooser_game_generate_images();
 
+	if ( ! $game_data ) {
+		return;
+	}
+
 	// The top level image game data will be indexed by filename and size.
 	// Each game round will use the same image file and size, with two different variations of quality, engine and format (mime type).
 	$game_image_data = array(
@@ -30,8 +34,6 @@ function image_quality_chooser_game_display() {
 	$engines   = array();
 	$mimes     = array();
 	$qualities = array();
-
-
 
 	// Go thru the images in the game data and get the sizes, engines and formats.
 	foreach ( $game_data as $image_data ) {
@@ -78,8 +80,6 @@ function image_quality_chooser_game_display() {
 			if ( ! in_array( $image_data['quality'], $qualities, true ) ) {
 				$qualities[] = $image_data['quality'];
 			}
-
-
 		}
 	}
 
@@ -92,9 +92,13 @@ function image_quality_chooser_game_display() {
 	$experiment_size = $sizes[ array_rand( $sizes ) ];
 
 	// Try several times to pick random files for the game.
-	$tries = 5;
+	$tries = 10;
 	// Pick a random file for the game.
 	$filenames = array_keys( $game_image_data );
+
+	$left_image_url = "";
+	$right_image_url = "";
+
 	while ( $tries-- > 0 ) {
 		$left_image = '';
 		$right_image = '';
@@ -134,8 +138,11 @@ function image_quality_chooser_game_display() {
 			$right_image = $game_image_data[ $experiment_filename ][ $experiment_size ][ $right_engine ][ $right_mime ][ $right_quality ];
 		}
 
-		// Continue of we have distinct left and right images.
-		if ( ! empty( $left_image ) && ! empty( $right_image ) && $left_image !== $right_image ) {
+		$left_image_url = wp_get_attachment_image_url( $left_image, $experiment_size );
+		$right_image_url = wp_get_attachment_image_url( $right_image, $experiment_size );
+
+		// Continue if we have distinct left and right images.
+		if ( ! empty( $left_image_url ) && ! empty( $right_image_url ) && $left_image !== $right_image ) {
 			break;
 		}
 	}
@@ -143,9 +150,10 @@ function image_quality_chooser_game_display() {
 	// Log time so far.
 	$so_far_time = microtime( true );
 
+	// Log the image URLs.
+	error_log( 'Left image URL: ' . $left_image_url );
+	error_log( 'Right image URL: ' . $right_image_url );
 
-	$left_image_url = wp_get_attachment_image_url( $left_image, $experiment_size );
-	$right_image_url = wp_get_attachment_image_url( $right_image, $experiment_size );
 
 	wp_enqueue_script( 'image-quality-chooser', plugins_url( '/js/image-quality-chooser-game.js', __FILE__ ), [], '1.0.0', true );
 	wp_enqueue_style( 'image-quality-chooser', plugins_url( '/css/image-quality-chooser-game.css', __FILE__ ), [], '1.0.0' );
@@ -170,6 +178,14 @@ function image_quality_chooser_game_display() {
 	// After the submission, reveal the image meta data.
 	?><html lang="en-US">
 	<head>
+	<script>
+		document.write(
+			'<script src="http://' +
+			(location.host || '${1:localhost}').split(':')[0] +
+			':${2:35729}/livereload.js?snipver=1"></' +
+			'script>'
+		);
+	</script>
 		<?php wp_head(); ?>
 	</head>
 	<body>

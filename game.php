@@ -20,6 +20,10 @@ function image_quality_chooser_game_display() {
 
 	$game_data = image_quality_chooser_game_generate_images();
 
+	if ( ! $game_data ) {
+		return;
+	}
+
 	// The top level image game data will be indexed by filename and size.
 	// Each game round will use the same image file and size, with two different variations of quality, engine and format (mime type).
 	$game_image_data = array(
@@ -30,8 +34,6 @@ function image_quality_chooser_game_display() {
 	$engines   = array();
 	$mimes     = array();
 	$qualities = array();
-
-
 
 	// Go thru the images in the game data and get the sizes, engines and formats.
 	foreach ( $game_data as $image_data ) {
@@ -78,35 +80,30 @@ function image_quality_chooser_game_display() {
 			if ( ! in_array( $image_data['quality'], $qualities, true ) ) {
 				$qualities[] = $image_data['quality'];
 			}
-
-
 		}
 	}
 
 	$sizes = image_quality_chooser_get_sizes();
 
-
-	error_log( "sizes:" . json_encode( $sizes, JSON_PRETTY_PRINT ) );
-
 	// Log time so far.
 	$so_far_time = microtime( true );
-	error_log( "Time so far: " . ( $so_far_time - $start_time ) );
 
 	// Pick a random size for the game. Both images use the same size.
 	$experiment_size = $sizes[ array_rand( $sizes ) ];
 
-
-
 	// Try several times to pick random files for the game.
-	$tries = 5;
+	$tries = 10;
 	// Pick a random file for the game.
 	$filenames = array_keys( $game_image_data );
+
+	$left_image_url = "";
+	$right_image_url = "";
+
 	while ( $tries-- > 0 ) {
 		$left_image = '';
 		$right_image = '';
 
 		$experiment_filename = $filenames[ array_rand( $filenames ) ];
-
 
 		// Pick the left and right images mime types..
 		$left_mime  = $mimes[ array_rand( $mimes ) ];
@@ -130,42 +127,37 @@ function image_quality_chooser_game_display() {
 		$right_name = image_quality_chooser_make_name( $experiment_filename, $experiment_size, $right_engine, $right_mime, $right_quality );
 
 		if ( empty ( $game_image_data[ $experiment_filename ][ $experiment_size ][ $left_engine ][ $left_mime ][ $left_quality ] ) ) {
-			image_quality_chooser_log_message( 'game_image_data for left is empty' );
 			continue;
 		} else {
 			$left_image = $game_image_data[ $experiment_filename ][ $experiment_size ][ $left_engine ][ $left_mime ][ $left_quality ];
 		}
 
 		if ( empty ( $game_image_data[ $experiment_filename ][ $experiment_size ][ $right_engine ][ $right_mime ][ $right_quality ] ) ) {
-			image_quality_chooser_log_message( 'game_image_data for right is empty' );
 			continue;
 		} else {
 			$right_image = $game_image_data[ $experiment_filename ][ $experiment_size ][ $right_engine ][ $right_mime ][ $right_quality ];
 		}
 
-		// Continue of we have distinct left and right images.
-		if ( ! empty( $left_image ) && ! empty( $right_image ) && $left_image !== $right_image ) {
+		$left_image_url = wp_get_attachment_image_url( $left_image, $experiment_size );
+		$right_image_url = wp_get_attachment_image_url( $right_image, $experiment_size );
+
+		// Continue if we have distinct left and right images.
+		if ( ! empty( $left_image_url ) && ! empty( $right_image_url ) && $left_image !== $right_image ) {
 			break;
 		}
-
 	}
 
-	// 2nd log time so far.
+	// Log time so far.
 	$so_far_time = microtime( true );
-	error_log( "Time so far 2: " . ( $so_far_time - $start_time ) );
 
-	$left_image_url = wp_get_attachment_image_url( $left_image, $experiment_size );
-	$right_image_url = wp_get_attachment_image_url( $right_image, $experiment_size );
-
-	// Log the image urls.
-	image_quality_chooser_log_message( 'left_image_url: ' . $left_image_url );
-	image_quality_chooser_log_message( 'right_image_url: ' . $right_image_url );
+	// Log the image URLs.
+	error_log( 'Left image URL: ' . $left_image_url );
+	error_log( 'Right image URL: ' . $right_image_url );
 
 
 	wp_enqueue_script( 'image-quality-chooser', plugins_url( '/js/image-quality-chooser-game.js', __FILE__ ), [], '1.0.0', true );
 	wp_enqueue_style( 'image-quality-chooser', plugins_url( '/css/image-quality-chooser-game.css', __FILE__ ), [], '1.0.0' );
 
-	wp_head();
 
 	$game_comparison_data = array(
 		'left_image'          => $left_image,
@@ -181,16 +173,28 @@ function image_quality_chooser_game_display() {
 	);
 
 	// Add a none for the submission.
-	$submission_nonce = wp_create_nonce( image_quality_chooser_get_nonce_key() );
+	$wp_nonce = wp_create_nonce( 'wp_rest' );
 
 	// After the submission, reveal the image meta data.
-	?>
+	?><html lang="en-US">
+	<head>
+	<script>
+		document.write(
+			'<script src="http://' +
+			(location.host || '${1:localhost}').split(':')[0] +
+			':${2:35729}/livereload.js?snipver=1"></' +
+			'script>'
+		);
+	</script>
+		<?php wp_head(); ?>
+	</head>
+	<body>
 	<div class="image-quality-chooser-game__overlay"></div>
 	<div class="image-quality-chooser-game">
 		<div class="image-quality-chooser-game__meta_header image-quality-chooser-game__results">
 			Image details
 		</div>
-		<div class="image-quality-chooser-game__experiment-data" data-nonce="<?php echo $submission_nonce; ?>" data-game-comparison="<?php echo htmlspecialchars( json_encode( $game_comparison_data ), ENT_QUOTES, 'UTF-8'); ?>"></div>
+		<div class="image-quality-chooser-game__experiment-data" data-wp-nonce="<?php echo $wp_nonce ?>" data-game-comparison="<?php echo htmlspecialchars( json_encode( $game_comparison_data ), ENT_QUOTES, 'UTF-8'); ?>"></div>
 		<div class="image-quality-chooser-game__instructions">
 			Which image do you prefer?
 		</div>
@@ -216,9 +220,8 @@ function image_quality_chooser_game_display() {
 			<button class="image-quality-chooser-game__button" data-image="no-preference">No Preference</button>
 		</div>
 	</div>
-	<?php
-	wp_footer();
-	// Log time to end.
-	$end_time = microtime( true );
-	error_log( "Time to end: " . ( $end_time - $start_time ) );
+	<?php wp_footer(); ?>
+	</body>
+</html>
+<?php
 }

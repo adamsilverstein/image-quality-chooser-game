@@ -18,7 +18,6 @@
 				'selection'      : target.getAttribute('data-image'),
 				'comparison-data': dataTarget.getAttribute('data-game-comparison'),
 				'timestamp'      : new Date().getTime(),
-				'nonce'          : dataTarget.getAttribute('data-nonce'),
 			};
 
 			showOverlay();
@@ -28,6 +27,8 @@
 			// TODO: Use the REST API namespace and route.
 			xhr.open( 'POST', 'wp-json/image-quality-chooser-game/v1/choose', true );
 			xhr.setRequestHeader('Content-Type', 'application/json');
+			xhr.setRequestHeader('X-WP-Nonce', dataTarget.getAttribute('data-wp-nonce'));
+
 			xhr.send( JSON.stringify( data ) );
 
 			// Handle success and failure.
@@ -36,7 +37,6 @@
 				if ( xhr.status >= 200 && xhr.status < 400 ) {
 					// Success!
 					var response = JSON.parse( xhr.responseText );
-					console.log( "response:", response );
 
 					showResults();
 
@@ -91,8 +91,6 @@
 		// Mark the game (image-quality-chooser-game class) as complete.
 		var game = document.querySelector('.image-quality-chooser-game' );
 		game.classList.add( 'image-quality-chooser-game__complete' );
-
-
 	}
 
 } )()

@@ -1,28 +1,46 @@
 <?php
+
 /**
  * Register the REST endpoint to collect choices.
  */
 add_action( 'rest_api_init', function() {
+	register_rest_route( 'image-quality-chooser-game/v1', '/settings', [
+		'methods'  => [ 'POST' ],
+		'callback' => function( WP_REST_Request $request ) {
+			$params = $request->get_json_params();
+			$action = $params['action'];
+
+			// Handle the action: one of setup, export or reset.
+			switch ( $action ) {
+				case 'setup':
+					// Setup the game images.
+					$game_data = image_quality_chooser_game_generate_images();
+					break;
+				case 'export':
+					// Export the game data.
+					$game_data = image_quality_chooser_export_game_data();
+					break;
+				case 'reset':
+					// Reset the game (choices) data.
+					$game_data = image_quality_chooser_reset_game_choices();
+					break;
+			}
+		},
+		'permission_callback' => '__return_true',
+	] );
+	/**
+	 * Register the endpoint to collect choices.
+	 */
 	register_rest_route( 'image-quality-chooser-game/v1', '/choose', [
 		'methods'  => 'POST',
 		'callback' => function( WP_REST_Request $request ) {
 			$comparison_data = json_decode( $request->get_param( 'comparison-data' ), true );
 			$selection       = json_decode( $request->get_param( 'selection' ) );
 			$timestamp       = json_decode( $request->get_param( 'timestamp' ) );
-			$nonce           = $request->get_param( 'nonce' );
-
-			// Validate the nonce.
-			if ( ! wp_verify_nonce( $nonce, image_quality_chooser_get_nonce_key() ) ) {
-				return new WP_Error( 'invalid-nonce', __( 'Invalid nonce.', 'image-quality-chooser' ), array( 'status' => 403 ) );
-			}
 
 			// Record the comparison data.
 			$choices = get_option( 'image-quality-chooser-game-choices', array() );
-			error_log( "selection:" . json_encode( $selection, JSON_PRETTY_PRINT ) );
-			error_log( "timestamp:" . json_encode( $timestamp, JSON_PRETTY_PRINT ) );
 
-			error_log( print_r( $comparison_data, true ) );
-			error_log( $comparison_data['left_image'] );
 			$current_choice = array(
 				'selection'     => $selection,
 				'timestamp'     => $timestamp,

@@ -11,15 +11,16 @@ function image_quality_chooser_game_generate_images() {
 
 	$folder = plugin_dir_path( dirname( __FILE__ ) . '/source_images' ) . 'source_images';
 	$images = glob( $folder . '/*.{jpg,jpeg,png,gif}', GLOB_BRACE );
-	if ( sizeof( $completed_images ) === sizeof( $images ) ) {
+	if ( $game_data && sizeof( $completed_images ) === sizeof( $images ) ) {
 		return $game_data;
 	}
 	$qualities = array(
-		'70',
-		'82',
-		'84',
-		'86',
-		'90',
+		70,
+		75,
+		82,
+		84,
+		86,
+		90,
 	);
 	$formats = array(
 		'jpeg',
@@ -30,7 +31,9 @@ function image_quality_chooser_game_generate_images() {
 		'GD',
 		//'Imagick',
 	);
-	add_filter('https_ssl_verify', '__return_false');
+
+	// Ignore certificate issues for SSL.
+	add_filter( 'https_ssl_verify', '__return_false' );
 
 	// Restrict core sub size generation to the sizes we need for the game.
 	$game_sizes = image_quality_chooser_get_sizes();
@@ -39,13 +42,11 @@ function image_quality_chooser_game_generate_images() {
 		return array_intersect_key( $sizes, array_flip( $game_sizes ) );
 	} );
 
-	image_quality_chooser_log_message( 'Image generation running. ');
-	image_quality_chooser_log_message( 'Variation count: ' . count( $qualities ) * count( $engines ) * count( $formats ) );
-	image_quality_chooser_log_message( 'Image count: ' . count( $images ) );
-	$total = count( $qualities ) * count( $engines ) * count( $formats ) * count( $images );
-	$count = 1;
-	$remaining = $total - count( $completed_images );
-
+	$multiplier      = count( $qualities ) * count( $engines ) * count( $formats );
+	$total           = $multiplier * count( $images );
+	$total_completed = $multiplier * count( $completed_images );
+	$remaining       = $total- $total_completed;
+	$count           = 1;
 
 	foreach ( $images as $image ) {
 
@@ -60,9 +61,6 @@ function image_quality_chooser_game_generate_images() {
 				return $quality;
 			} );
 
-			// Log image.
-			image_quality_chooser_log_message( 'Image: ' . basename( $image ) );
-
 			// Sideload the images into the media library using their URLs.
 			$plugin_image_url = plugins_url( 'source_images/' . basename( $image ), plugin_dir_path( __FILE__ ) . 'source_images' );
 			require_once(ABSPATH . 'wp-admin/includes/media.php');
@@ -71,10 +69,6 @@ function image_quality_chooser_game_generate_images() {
 
 			// Generate with each supported engine.
 			foreach ( $engines as $engine ) {
-
-				// Log engine.
-				image_quality_chooser_log_message( 'Engine: ' . $engine );
-
 				// Set the editor engine accordingly.
 				add_filter( 'wp_image_editors', function( $editors ) use ( $engine ) {
 					$editors = array( 'WP_Image_Editor_' .$engine );
@@ -83,9 +77,6 @@ function image_quality_chooser_game_generate_images() {
 
 				// Generate each supported test mime type.
 				foreach ( $formats as $format ) {
-					// Log format.
-					image_quality_chooser_log_message( 'Format: ' . $format );
-
 					// Set the mime type accordingly.
 					$mime_type = 'image/' . $format;
 
@@ -102,13 +93,16 @@ function image_quality_chooser_game_generate_images() {
 					$image_variation = image_quality_chooser_make_name( basename( $image ), 'orig', $format,  $engine,  $quality );
 
 					// Log the image variation.
-					image_quality_chooser_log_message( sprintf( 'Image variation %s of %s: %s', $count, ( $total-count($completed_images) ), $image_variation ) );
+					image_quality_chooser_log_message( sprintf( 'Processed variation %s of %s (%s)', $count, $remaining, $image_variation ) );
 					$count++;
 
 					$attach_id = media_sideload_image( $plugin_image_url, 0, $image_variation, 'id' );
 					$attach_data = wp_get_attachment_metadata( $attach_id );
 
-					// Log the image variation data.
+					$sizes = array();
+					foreach( image_quality_chooser_get_sizes() as $size ) {
+						$sizes[ $size ] = $attach_data['sizes'][ $size ];
+					}
 					$game_data[] = array(
 						'attachment_id' => $attach_id,
 						'upload_file'   => $attach_data['file'],
@@ -120,13 +114,8 @@ function image_quality_chooser_game_generate_images() {
 						'filesize'      => $attach_data['filesize'],
 						'width'         => $attach_data['width'],
 						'height'        => $attach_data['height'],
-						'sizes'         => array(
-							//'thumbnail' => $attach_data['sizes']['thumbnail'],
-							//'medium'    => $attach_data['sizes']['medium'],
-							'large'     => $attach_data['sizes']['large'],
-						),
+						'sizes'         => $sizes,
 					);
-
 					remove_all_filters( 'image_editor_output_format' );
 				}
 				remove_all_filters( 'wp_image_editors' );
@@ -181,10 +170,10 @@ function image_quality_chooser_log_message( $message ) {
  * Set the game data.
  *
  * @param array $game_data The game data.
- * @return void
+ * @return bool True if the value was updated, false otherwise.
  */
 function image_quality_chooser_set_game_data( $game_data ) {
-	update_option( 'image_quality_chooser_game_settings', $game_data );
+	return update_option( 'image_quality_chooser_game_data', $game_data );
 }
 
 /**
@@ -193,7 +182,7 @@ function image_quality_chooser_set_game_data( $game_data ) {
  * @return array $game_data The game data.
  */
 function image_quality_chooser_get_game_data() {
-	return get_option( 'image_quality_chooser_game_settings' );
+	return get_option( 'image_quality_chooser_game_data' );
 }
 
 /**
@@ -202,7 +191,7 @@ function image_quality_chooser_get_game_data() {
  * @return void
  */
 function image_quality_chooser_reset_game_data() {
-	delete_option( 'image_quality_chooser_game_settings' );
+	return delete_option( 'image_quality_chooser_game_data' );
 }
 
 /**
@@ -211,16 +200,35 @@ function image_quality_chooser_reset_game_data() {
 function image_quality_chooser_get_sizes() {
 	return array(
 		// 'thumbnail',
-		// 'medium',
-		'large',
+		 'medium',
+		//'large',
 	);
 }
 
 /**
- * Return the nonce key.
+ * Set the game choices.
+ *
+ * @param array $choices The choices.
+ * @return bool True if the value was updated, false otherwise.
  */
-function image_quality_chooser_get_nonce_key() {
-	return 'image_quality_chooser-submission';
+function image_quality_chooser_set_game_choices( $choices ) {
+	return update_option( 'image-quality-chooser-game-choices', $choices );
+}
+
+/**
+ * Get the game choices.
+ */
+function image_quality_chooser_get_game_choices() {
+	return get_option( 'image-quality-chooser-game-choices' );
+}
+
+/**
+ * Reset the game choices.
+ *
+ * @return void
+ */
+function image_quality_chooser_reset_game_choices() {
+	return delete_option( 'image-quality-chooser-game-choices' ) && delete_option( 'image_quality_chooser_completed_images' );
 }
 
 

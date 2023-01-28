@@ -21,7 +21,8 @@ function image_quality_chooser_game_settings_page() {
 		<p>Choose an action:</p>
 		<button data-action="export" class="button">Export</button>
 		<button data-action="setup" class="button">Setup</button>
-		<button data-action="reset" class="button">Reset</button>
+		<button data-action="reset-results" class="button">Reset Results</button>
+		<button data-action="reset" class="button">Reset All</button>
 	</div>
 	<?php
 }

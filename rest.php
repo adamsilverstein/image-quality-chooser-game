@@ -10,19 +10,28 @@ add_action( 'rest_api_init', function() {
 			$params = $request->get_json_params();
 			$action = $params['action'];
 
+			// Log the action.
+			error_log( 'Action: ' . $action );
+
 			// Handle the action: one of setup, export or reset.
 			switch ( $action ) {
 				case 'setup':
 					// Setup the game images.
-					$game_data = image_quality_chooser_game_generate_images();
+					image_quality_chooser_game_generate_images();
 					break;
 				case 'export':
 					// Export the game data.
-					$game_data = image_quality_chooser_export_game_data();
+					image_quality_chooser_export_game_data();
 					break;
 				case 'reset':
+					// Reset all game data.
+					image_quality_chooser_reset_game_data();
+					image_quality_chooser_reset_game_choices();
+					image_quality_chooser_reset_completed_images();
+					break;
+				case 'reset-results':
 					// Reset the game (choices) data.
-					$game_data = image_quality_chooser_reset_game_choices();
+					image_quality_chooser_reset_game_choices();
 					break;
 			}
 		},

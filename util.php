@@ -200,8 +200,8 @@ function image_quality_chooser_reset_game_data() {
 function image_quality_chooser_get_sizes() {
 	return array(
 		// 'thumbnail',
-		 'medium',
-		//'large',
+		// 'medium',
+		'large',
 	);
 }
 
@@ -225,10 +225,17 @@ function image_quality_chooser_get_game_choices() {
 /**
  * Reset the game choices.
  *
- * @return void
+ * @return bool True if the value was updated, false otherwise.
  */
 function image_quality_chooser_reset_game_choices() {
-	return delete_option( 'image-quality-chooser-game-choices' ) && delete_option( 'image_quality_chooser_completed_images' );
+	return delete_option( 'image-quality-chooser-game-choices' );
 }
 
-
+/**
+ * Reset the completed images.
+ *
+ * @return bool True if the value was updated, false otherwise.
+ */
+function image_quality_chooser_reset_completed_images() {
+	return delete_option( 'image_quality_chooser_completed_images' );
+}

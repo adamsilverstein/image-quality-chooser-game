@@ -38,12 +38,12 @@ function image_quality_chooser_game_display() {
 	// Go thru the images in the game data and get the sizes, engines and formats.
 	foreach ( $game_data as $image_data ) {
 		$filename = basename( $image_data['filename'] );
-
 		if ( ! isset( $game_image_data[ $filename ] ) ) {
 			$game_image_data[ $filename ] = array(
 				'sizes' => array(),
 			);
 		}
+		$game_image_data[ $filename ]['attachment_id'] = $image_data['attachment_id'];
 
 		foreach ( $image_data['sizes'] as $size_name => $size ) {
 
@@ -141,6 +141,9 @@ function image_quality_chooser_game_display() {
 		$left_image_url = wp_get_attachment_image_url( $left_image, $experiment_size );
 		$right_image_url = wp_get_attachment_image_url( $right_image, $experiment_size );
 
+		// Find the original image url from the filename.
+		$original_image_url = wp_get_attachment_image_src( $game_image_data[ $experiment_filename ]['attachment_id'] );
+
 		// Continue if we have distinct left and right images.
 		if ( ! empty( $left_image_url ) && ! empty( $right_image_url ) && $left_image !== $right_image ) {
 			break;
@@ -178,47 +181,66 @@ function image_quality_chooser_game_display() {
 	// After the submission, reveal the image meta data.
 	?><html lang="en-US">
 	<head>
-	<script>
-		document.write(
-			'<script src="http://' +
-			(location.host || '${1:localhost}').split(':')[0] +
-			':${2:35729}/livereload.js?snipver=1"></' +
-			'script>'
-		);
-	</script>
 		<?php wp_head(); ?>
 	</head>
 	<body>
 	<div class="image-quality-chooser-game__overlay"></div>
-	<div class="image-quality-chooser-game">
-		<div class="image-quality-chooser-game__meta_header image-quality-chooser-game__results">
-			Image details
-		</div>
-		<div class="image-quality-chooser-game__experiment-data" data-wp-nonce="<?php echo $wp_nonce ?>" data-game-comparison="<?php echo htmlspecialchars( json_encode( $game_comparison_data ), ENT_QUOTES, 'UTF-8'); ?>"></div>
-		<div class="image-quality-chooser-game__instructions">
-			Which image do you prefer?
-		</div>
-		<div class="image-quality-chooser-game__images">
-			<div class="image-quality-chooser-game__image">
+	<div class="image-quality-chooser-game__experiment-data" data-wp-nonce="<?php echo $wp_nonce ?>" data-game-comparison="<?php echo htmlspecialchars( json_encode( $game_comparison_data ), ENT_QUOTES, 'UTF-8'); ?>"></div>
+	<div class="image-quality-chooser-game__instructions">
+		<h1>Which image is more similar to the original?</h1>
+		<p>Press the <em>1</em> and <em>2</em> keys to swap the left image. Press <em>z</em> to toggle zoom</p>
+		<p>
+			<button class="image-quality-chooser-game__button" data-image="Image 1">Image 1</button>
+			<button class="image-quality-chooser-game__button" data-image="Image 2">Image 2</button>
+			<button class="image-quality-chooser-game__button" data-image="Neither">Neither</button>
+		</p>
+	</div>
+		<div id="image-quality-chooser-game" class="image-quality-chooser-game">
+			<div class="image-quality-chooser-left-image image-quality-chooser-game__image" id="image-quality-chooser-image-1">
+				<div class="image-quality-chooser-game__image_header" >
+					Image 1
+				</div>
 				<div class="image-quality-chooser-game__results">
 					<?php echo sprintf( 'Image Type: %s, Quality: %s, Engine: %s', ucfirst( str_replace( 'image/', '', $left_mime ) ), $left_quality, $left_engine ); ?>
 				</div>
-				<img src="<?php echo $left_image_url; ?>" data-image="<?php echo $left_image ?>" class="image-quality-chooser-game__image_tag">
-			</div>
-			<div class="image-quality-chooser-game__image">
-				<div class="image-quality-chooser-game__results">
-					<?php echo sprintf( 'Image Type: %s, Quality: %s, Engine: %s', ucfirst( str_replace( 'image/', '', $right_mime ) ), $right_quality, $right_engine ); ?>
+				<div class="image-quality-chooser-game__image_wrapper">
+					<img src="<?php echo $left_image_url; ?>" data-image="<?php echo $left_image ?>" class="image-quality-chooser-game__image_tag">
 				</div>
-				<img src="<?php echo $right_image_url; ?>" data-image="<?php echo $right_image ?>" class="image-quality-chooser-game__image_tag">
 			</div>
+			<div class="image-quality-chooser-left-image image-quality-chooser-game__image" id="image-quality-chooser-image-2">
+				<div class="image-quality-chooser-game__image_header">
+					Image 2
+				</div>
+				<div class="image-quality-chooser-game__image">
+					<div class="image-quality-chooser-game__results">
+						<?php echo sprintf( 'Image Type: %s, Quality: %s, Engine: %s', ucfirst( str_replace( 'image/', '', $right_mime ) ), $right_quality, $right_engine ); ?>
+					</div>
+					<div class="image-quality-chooser-game__image_wrapper">
+						<img src="<?php echo $right_image_url; ?>" data-image="<?php echo $right_image ?>" class="image-quality-chooser-game__image_tag">
+					</div>
+				</div>
+			</div>
+			<div class="image-quality-chooser-game__image image-quality-chooser-right-image ">
+				<div class="image-quality-chooser-image-original">
+					<div class="image-quality-chooser-game__image_header">
+						Original
+					</div>
+					<div class="image-quality-chooser-game__results">
+						Original Image
+					</div>
+					<div class="image-quality-chooser-game__image_wrapper">
+						<img src="<?php echo $original_image_url[0]; ?>" data-image="<?php echo $experiment_filename ?>" class="image-quality-chooser-game__image_tag">
+					</div>
+				</div>
+			</div>
+
 		</div>
+
 		<div class="image-quality-chooser-game__results">
 			Download the Performance Lab Plugin to test!<br />
 			<img src="<?php echo plugins_url( '/images/download-the-performance-lab-plugin-small.png', __FILE__ ) ?>" width=150 height=150>
 		</div>
-		<div class="image-quality-chooser-game__controls">
-			<button class="image-quality-chooser-game__button" data-image="no-preference">No Preference</button>
-		</div>
+
 	</div>
 	<?php wp_footer(); ?>
 	</body>

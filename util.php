@@ -48,6 +48,10 @@ function image_quality_chooser_game_generate_images() {
 	$remaining       = $total- $total_completed;
 	$count           = 1;
 
+
+	// Attempt to allocate enough time to process all images, ~30 seconds per variation.
+	@set_time_limit( 30 * count( $remaining ) );
+
 	foreach ( $images as $image ) {
 
 		// Skip already completed images.

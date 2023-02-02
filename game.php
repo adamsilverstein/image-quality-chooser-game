@@ -41,9 +41,11 @@ function image_quality_chooser_game_display() {
 		if ( ! isset( $game_image_data[ $filename ] ) ) {
 			$game_image_data[ $filename ] = array(
 				'sizes' => array(),
+				'filesize' => $image_data['filesize'],
 			);
 		}
 		$game_image_data[ $filename ]['attachment_id'] = $image_data['attachment_id'];
+		$game_image_data[ $filename ]['filesize'] = $image_data['filesize'];
 
 		foreach ( $image_data['sizes'] as $size_name => $size ) {
 
@@ -67,7 +69,8 @@ function image_quality_chooser_game_display() {
 			}
 
 
-			$game_image_data[ $filename ][ $size_name ][ $engine ][ $mime ][ $quality ] = $image_data['attachment_id'];
+			$game_image_data[ $filename ][ $size_name ][ $engine ][ $mime ][ $quality ]['attachment_id'] = $image_data['attachment_id'];
+			$game_image_data[ $filename ][ $size_name ][ $engine ][ $mime ][ $quality ]['filesize'] = $image_data['filesize'];
 
 			if ( ! in_array( $image_data['engine'], $engines, true ) ) {
 				$engines[] = $image_data['engine'];
@@ -135,7 +138,8 @@ function image_quality_chooser_game_display() {
 		if ( empty ( $game_image_data[ $experiment_filename ][ $experiment_size ][ $right_engine ][ $right_mime ][ $right_quality ] ) ) {
 			continue;
 		} else {
-			$right_image = $game_image_data[ $experiment_filename ][ $experiment_size ][ $right_engine ][ $right_mime ][ $right_quality ];
+			$image_2_image = $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_2_engine ][ $image_2_mime ][ $image_2_quality ]['attachment_id'];
+			$image_2_size = $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_2_engine ][ $image_2_mime ][ $image_2_quality ]['filesize'];
 		}
 
 		$left_image_url = wp_get_attachment_image_url( $left_image, $experiment_size );

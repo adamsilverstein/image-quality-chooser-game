@@ -4,9 +4,14 @@
 	align-items: center;
 	margin: auto;
 	width: 2088px;
+	background-color: transparent;
+	transition: background-color 0.25s ease;
+	border: 5px solid transparent;
  }
 
-
+ .image-quality-chooser-game.image-quality-chooser-game__highlight {
+	background-color: #eee;
+}
 
 .image-quality-chooser-game__image_wrapper {
 	width: 1024px;
@@ -27,7 +32,13 @@ button {
 	width: auto;
 	font-size: 28px;
 	cursor: pointer;
-	margin: auto;
+	margin: 10px;
+	padding: 10px;
+}
+
+button.image-quality-chooser-game__button_selected {
+	background-color: #4CAF50;
+	color: white;
 }
 
 .image-quality-chooser-game__controls {
@@ -38,6 +49,7 @@ button {
 .image-quality-chooser-game__instructions {
 	width: 100%;
 	text-align: center;
+	padding-top: 10px;
 }
 
 .image-quality-chooser-game__instructions p {
@@ -66,11 +78,15 @@ button {
 }
 
 .image-quality-chooser-game__results {
-	text-align: center;
+	text-align: left;
 	padding: 0 10px;
-	display: inline;
+	display: none;
 	font-size: 38px;
 	font-weight: bold;
+}
+
+.image-quality-chooser-game__results.image-quality-chooser-game__CTA {
+	text-align: center;
 }
 
 .image-quality-chooser-game__meta_header {
@@ -79,13 +95,13 @@ button {
 }
 
 /* Add a green border and very light green background to the winning image */
-.image-quality-chooser-game.image-quality-chooser-game__complete .image-quality-chooser-game__image {
+.image-quality-chooser-game.image-quality-chooser-game__complete .image-quality-chooser-game__image.image-quality-chooser-game__winner {
 	border: 5px solid #4CAF50;
 	background-color: #f1fff1;
 }
 
 /* Add a red border and very light red background to the losing image */
-.image-quality-chooser-game.image-quality-chooser-game__complete .image-quality-chooser-game__image:not(.image-quality-chooser-game__winner) {
+.image-quality-chooser-game.image-quality-chooser-game__complete .image-quality-chooser-game__image:not(.image-quality-chooser-game__winner):not(.image-quality-chooser-game__image_original) {
 	border: 5px solid #f44336;
 	background-color: #ffebeb;
 }
@@ -96,7 +112,13 @@ button {
 }
 
 .image-quality-chooser-game__image_header {
-	font-size: 48px;
+	font-size: 38px;
 	font-weight: bold;
 	clear: both;
+}
+
+#image-quality-chooser-reload-timer {
+	position: absolute;
+	right: 15px;
+	top: 0;
 }

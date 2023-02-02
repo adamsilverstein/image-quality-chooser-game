@@ -45,12 +45,12 @@ function image_quality_chooser_game_generate_images() {
 	$multiplier      = count( $qualities ) * count( $engines ) * count( $formats );
 	$total           = $multiplier * count( $images );
 	$total_completed = $multiplier * count( $completed_images );
-	$remaining       = $total- $total_completed;
+	$remaining       = $total - $total_completed;
 	$count           = 1;
 
 
 	// Attempt to allocate enough time to process all images, ~30 seconds per variation.
-	@set_time_limit( 30 * count( $remaining ) );
+	@set_time_limit( 30 * $remaining );
 
 	foreach ( $images as $image ) {
 

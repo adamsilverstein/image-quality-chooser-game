@@ -99,57 +99,59 @@ function image_quality_chooser_game_display() {
 	// Pick a random file for the game.
 	$filenames = array_keys( $game_image_data );
 
-	$left_image_url = "";
-	$right_image_url = "";
+	$image_1_image_url = "";
+	$image_2_image_url = "";
 
 	while ( $tries-- > 0 ) {
-		$left_image = '';
-		$right_image = '';
+		$image_1_image = '';
+		$image_2_image = '';
 
 		$experiment_filename = $filenames[ array_rand( $filenames ) ];
 
 		// Pick the left and right images mime types..
-		$left_mime  = $mimes[ array_rand( $mimes ) ];
-		$right_mime = $mimes[ array_rand( $mimes ) ];
+		$image_1_mime  = $mimes[ array_rand( $mimes ) ];
+		$image_2_mime = $mimes[ array_rand( $mimes ) ];
 
 		// Pick the left and right quality.
-		$left_quality  = $qualities[ array_rand( $qualities ) ];
-		$right_quality = $qualities[ array_rand( $qualities ) ];
+		$image_1_quality  = $qualities[ array_rand( $qualities ) ];
+		$image_2_quality = $qualities[ array_rand( $qualities ) ];
 
 		// Avoid too similar images.
-		if ( $left_mime === $right_mime && abs( $left_quality - $right_quality ) < 5 ) {
+		if ( abs( $image_1_quality - $image_2_quality ) < 5 ) {
 			continue;
 		}
 
 		// Pick the left and right images engines.
-		$left_engine  = $engines[ array_rand( $engines ) ];
-		$right_engine = $engines[ array_rand( $engines ) ];
+		$image_1_engine  = $engines[ array_rand( $engines ) ];
+		$image_2_engine = $engines[ array_rand( $engines ) ];
 
 		// Calculate the filenames for the left and right images.
-		$left_name  = image_quality_chooser_make_name( $experiment_filename, $experiment_size, $left_engine, $left_mime, $left_quality );
-		$right_name = image_quality_chooser_make_name( $experiment_filename, $experiment_size, $right_engine, $right_mime, $right_quality );
+		$image_1_name  = image_quality_chooser_make_name( $experiment_filename, $experiment_size, $image_1_engine, $image_1_mime, $image_1_quality );
+		$image_2_name = image_quality_chooser_make_name( $experiment_filename, $experiment_size, $image_2_engine, $image_2_mime, $image_2_quality );
 
-		if ( empty ( $game_image_data[ $experiment_filename ][ $experiment_size ][ $left_engine ][ $left_mime ][ $left_quality ] ) ) {
+		if ( empty ( $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_1_engine ][ $image_1_mime ][ $image_1_quality ] ) ) {
 			continue;
 		} else {
-			$left_image = $game_image_data[ $experiment_filename ][ $experiment_size ][ $left_engine ][ $left_mime ][ $left_quality ];
+			$image_1_image      = $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_1_engine ][ $image_1_mime ][ $image_1_quality ]['attachment_id'];
+			$image_1_size = $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_1_engine ][ $image_1_mime ][ $image_1_quality ]['filesize'];
 		}
 
-		if ( empty ( $game_image_data[ $experiment_filename ][ $experiment_size ][ $right_engine ][ $right_mime ][ $right_quality ] ) ) {
+		if ( empty ( $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_2_engine ][ $image_2_mime ][ $image_2_quality ] ) ) {
 			continue;
 		} else {
 			$image_2_image = $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_2_engine ][ $image_2_mime ][ $image_2_quality ]['attachment_id'];
 			$image_2_size = $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_2_engine ][ $image_2_mime ][ $image_2_quality ]['filesize'];
 		}
 
-		$left_image_url = wp_get_attachment_image_url( $left_image, $experiment_size );
-		$right_image_url = wp_get_attachment_image_url( $right_image, $experiment_size );
+		$image_1_image_url = wp_get_attachment_image_url( $image_1_image, $experiment_size );
+		$image_2_image_url = wp_get_attachment_image_url( $image_2_image, $experiment_size );
 
 		// Find the original image url from the filename.
 		$original_image_url = wp_get_attachment_image_src( $game_image_data[ $experiment_filename ]['attachment_id'] );
+		$original_image_filesize = $game_image_data[ $experiment_filename ]['filesize'];
 
 		// Continue if we have distinct left and right images.
-		if ( ! empty( $left_image_url ) && ! empty( $right_image_url ) && $left_image !== $right_image ) {
+		if ( ! empty( $image_1_image_url ) && ! empty( $image_2_image_url ) && $image_1_image !== $image_2_image ) {
 			break;
 		}
 	}
@@ -158,25 +160,16 @@ function image_quality_chooser_game_display() {
 	$so_far_time = microtime( true );
 
 	// Log the image URLs.
-	error_log( 'Left image URL: ' . $left_image_url );
-	error_log( 'Right image URL: ' . $right_image_url );
+	error_log( 'Left image URL: ' . $image_1_image_url );
+	error_log( 'Right image URL: ' . $image_2_image_url );
 
 
 	wp_enqueue_script( 'image-quality-chooser', plugins_url( '/js/image-quality-chooser-game.js', __FILE__ ), [], '1.0.0', true );
 	wp_enqueue_style( 'image-quality-chooser', plugins_url( '/css/image-quality-chooser-game.css', __FILE__ ), [], '1.0.0' );
 
-
-	$game_comparison_data = array(
-		'left_image'          => $left_image,
-		'right_image'         => $right_image,
-		'left_quality'        => $left_quality,
-		'right_quality'       => $right_quality,
-		'left_mime'           => str_replace( 'image/', '', $left_mime ),
-		'right_mime'          => str_replace( 'image/', '', $right_mime ),
-		'left_engine'         => $left_engine,
-		'right_engine'        => $right_engine,
-		'experiment_size'     => $experiment_size,
-		'experiment_filename' => $experiment_filename,
+	$image_format_names = array(
+		'image/jpeg' => 'JPEG',
+		'image/webp' => 'WebP',
 	);
 
 	// Add a none for the submission.
@@ -188,15 +181,16 @@ function image_quality_chooser_game_display() {
 		<?php wp_head(); ?>
 	</head>
 	<body>
-	<div class="image-quality-chooser-game__overlay"></div>
-	<div class="image-quality-chooser-game__experiment-data" data-wp-nonce="<?php echo $wp_nonce ?>" data-game-comparison="<?php echo htmlspecialchars( json_encode( $game_comparison_data ), ENT_QUOTES, 'UTF-8'); ?>"></div>
+	<div id="image-quality-chooser-overlay" class="image-quality-chooser-game__overlay"></div>
+	<div id="image-quality-chooser-game-data" data-wp-nonce="<?php echo $wp_nonce ?>" data-game-size="<?php echo $experiment_size; ?>" data-game-filename="<?php echo $experiment_filename; ?>" data-original-filesize="<?php echo $original_image_filesize ?>"></div>
 	<div class="image-quality-chooser-game__instructions">
 		<h1>Which image is more similar to the original?</h1>
 		<p>Press the <em>1</em> and <em>2</em> keys to swap the left image. Press <em>z</em> to toggle zoom</p>
 		<p>
-			<button class="image-quality-chooser-game__button" data-image="Image 1">Image 1</button>
-			<button class="image-quality-chooser-game__button" data-image="Image 2">Image 2</button>
-			<button class="image-quality-chooser-game__button" data-image="Neither">Neither</button>
+			Your choice:
+			<button id="image-quality-chooser-image-1-button" class="image-quality-chooser-game__button" data-selection="1">Image 1</button>
+			<button id="image-quality-chooser-image-2-button" class="image-quality-chooser-game__button" data-selection="2">Image 2</button>
+			<button id="image-quality-chooser-image-neither-button" class="image-quality-chooser-game__button" data-selection="Neither">Neither</button>
 		</p>
 	</div>
 		<div id="image-quality-chooser-game" class="image-quality-chooser-game">
@@ -205,45 +199,44 @@ function image_quality_chooser_game_display() {
 					Image 1
 				</div>
 				<div class="image-quality-chooser-game__results">
-					<?php echo sprintf( 'Image Type: %s, Quality: %s, Engine: %s', ucfirst( str_replace( 'image/', '', $left_mime ) ), $left_quality, $left_engine ); ?>
+					<?php echo sprintf( 'Image 1: %s, Quality: %s - Size: %s', $image_format_names[ $image_1_mime ], $image_1_quality, size_format( $image_1_size, 2 ) ); ?>
 				</div>
 				<div class="image-quality-chooser-game__image_wrapper">
-					<img src="<?php echo $left_image_url; ?>" data-image="<?php echo $left_image ?>" class="image-quality-chooser-game__image_tag">
+					<img src="<?php echo $image_1_image_url; ?>" data-image="<?php echo $image_1_image ?>" data-mime="<?php echo $image_1_mime; ?>" data-quality="<?php echo $image_1_quality ?>" data-engine="<?php echo $image_1_engine ?>" data-size="<?php echo $image_1_size ?>" class="image-quality-chooser-game__image_tag">
 				</div>
 			</div>
 			<div class="image-quality-chooser-left-image image-quality-chooser-game__image" id="image-quality-chooser-image-2">
 				<div class="image-quality-chooser-game__image_header">
 					Image 2
 				</div>
-				<div class="image-quality-chooser-game__image">
-					<div class="image-quality-chooser-game__results">
-						<?php echo sprintf( 'Image Type: %s, Quality: %s, Engine: %s', ucfirst( str_replace( 'image/', '', $right_mime ) ), $right_quality, $right_engine ); ?>
-					</div>
-					<div class="image-quality-chooser-game__image_wrapper">
-						<img src="<?php echo $right_image_url; ?>" data-image="<?php echo $right_image ?>" class="image-quality-chooser-game__image_tag">
-					</div>
+				<div class="image-quality-chooser-game__results">
+					<?php echo sprintf( 'Image 2: %s, Quality: %s - Size: %s', $image_format_names[ $image_2_mime ], $image_2_quality, size_format( $image_2_size, 2 ) ); ?>
+				</div>
+				<div class="image-quality-chooser-game__image_wrapper">
+					<img src="<?php echo $image_2_image_url; ?>" data-image="<?php echo $image_2_image ?>" data-mime="<?php echo $image_2_mime; ?>" data-quality="<?php echo $image_2_quality ?>" data-engine="<?php echo $image_2_engine ?>" data-size="<?php echo $image_2_size ?>" class="image-quality-chooser-game__image_tag">
 				</div>
 			</div>
-			<div class="image-quality-chooser-game__image image-quality-chooser-right-image ">
+			<div class="image-quality-chooser-game__image image-quality-chooser-right-image image-quality-chooser-game__image_original ">
 				<div class="image-quality-chooser-image-original">
 					<div class="image-quality-chooser-game__image_header">
-						Original
-					</div>
-					<div class="image-quality-chooser-game__results">
 						Original Image
 					</div>
+					<div class="image-quality-chooser-game__results ">
+						<?php echo sprintf( 'Original Image - Size: %s', size_format( $original_image_filesize, 2 ) ); ?>
+					</div>
 					<div class="image-quality-chooser-game__image_wrapper">
-						<img src="<?php echo $original_image_url[0]; ?>" data-image="<?php echo $experiment_filename ?>" class="image-quality-chooser-game__image_tag">
+						<img src="<?php echo $original_image_url[0]; ?>" data-image="<?php echo $experiment_filename ?>" class="image-quality-chooser-game__image_tag ">
 					</div>
 				</div>
 			</div>
 
 		</div>
 
-		<div class="image-quality-chooser-game__results">
+		<div class="image-quality-chooser-game__results image-quality-chooser-game__CTA">
 			Download the Performance Lab Plugin to test!<br />
 			<img src="<?php echo plugins_url( '/images/download-the-performance-lab-plugin-small.png', __FILE__ ) ?>" width=150 height=150>
 		</div>
+		<div id="image-quality-chooser-reload-timer"></div>
 
 	</div>
 	<?php wp_footer(); ?>

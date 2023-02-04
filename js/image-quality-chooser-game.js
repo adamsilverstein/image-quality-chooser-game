@@ -147,7 +147,7 @@
 		}
 
 		// When users press `z`, zoom the images.
-		if ( 122 === keyCode ) {
+		if ( 90 === keyCode ) {
 			// Toggle the zoom class on gameDiv.
 			gameDiv.classList.toggle( 'zoom' );
 		}

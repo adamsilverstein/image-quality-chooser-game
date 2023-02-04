@@ -4,7 +4,7 @@
  * Plugin URI:  https://github.com/adamsilverstein/image-quality-chooser-game
  * Requires PHP: 7.4
  * Description: A game to help users understand the tradeoffs between image quality and file size.
- * Version:     1.0.0
+ * Version:     1.0.1
  * Author:      Adam Silverstein
  * Author URI:  https://make.wordpress.org/profile/adamsilverstein
  * License:     Apache-2.0

@@ -45,8 +45,12 @@ function image_quality_chooser_game_generate_images() {
 	$multiplier      = count( $qualities ) * count( $engines ) * count( $formats );
 	$total           = $multiplier * count( $images );
 	$total_completed = $multiplier * count( $completed_images );
-	$remaining       = $total- $total_completed;
+	$remaining       = $total - $total_completed;
 	$count           = 1;
+
+
+	// Attempt to allocate enough time to process all images, ~30 seconds per variation.
+	@set_time_limit( 30 * $remaining );
 
 	foreach ( $images as $image ) {
 
@@ -200,8 +204,8 @@ function image_quality_chooser_reset_game_data() {
 function image_quality_chooser_get_sizes() {
 	return array(
 		// 'thumbnail',
-		 'medium',
-		//'large',
+		// 'medium',
+		'large',
 	);
 }
 
@@ -225,10 +229,17 @@ function image_quality_chooser_get_game_choices() {
 /**
  * Reset the game choices.
  *
- * @return void
+ * @return bool True if the value was updated, false otherwise.
  */
 function image_quality_chooser_reset_game_choices() {
-	return delete_option( 'image-quality-chooser-game-choices' ) && delete_option( 'image_quality_chooser_completed_images' );
+	return delete_option( 'image-quality-chooser-game-choices' );
 }
 
-
+/**
+ * Reset the completed images.
+ *
+ * @return bool True if the value was updated, false otherwise.
+ */
+function image_quality_chooser_reset_completed_images() {
+	return delete_option( 'image_quality_chooser_completed_images' );
+}

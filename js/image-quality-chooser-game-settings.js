@@ -2,6 +2,7 @@
  * JavaScript for the settings page of the Image Quality Chooser game.
  */
 ( function () {
+
 	console.log( 'admin' );
 	// Listen for clicks on the three buttons: export, setup and reset.
 	document.addEventListener( 'click', function ( event ) {
@@ -11,7 +12,7 @@
 
 			// Send an ajax request with the action.
 			var xhr = new XMLHttpRequest();
-			xhr.open( 'POST', 'wp-json/image-quality-chooser-game/v1/settings', true );
+			xhr.open( 'POST', '/wp-json/image-quality-chooser-game/v1/settings', true );
 
 			xhr.setRequestHeader( 'Content-Type', 'application/json' );
 

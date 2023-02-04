@@ -126,10 +126,10 @@
 
 	};
 
-	document.addEventListener( 'keypress', function ( event ) {
+	document.addEventListener( 'keydown', function ( event ) {
 		keyCode = event.keyCode;
-		// 49 is the key code for the number `1`. Show image 1.
-		if ( 49 === keyCode ) {
+		// 49 is the key code for the number `1` or the left arrow. Show image 1.
+		if ( 49 === keyCode || 37 === keyCode ) {
 			// Show image 1.
 			imageOne.style.display = 'inline';
 			imageTwo.style.display = 'none';
@@ -137,8 +137,8 @@
 			highlightGame();
 		}
 
-		// 50 is the key code for the number `2`. Show image 2
-		if ( 50 === keyCode ) {
+		// 50 is the key code for the number `2` or the right arrow. Show image 2
+		if ( 50 === keyCode || 39 === keyCode ) {
 			// Show image 2.
 			imageOne.style.display = 'none';
 			imageTwo.style.display = 'inline';

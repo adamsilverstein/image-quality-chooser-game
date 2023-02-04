@@ -74,7 +74,7 @@ class Create_Test_Images_Command extends WP_CLI_Command {
 				fputcsv( $fp, $fields );
 			}
 			fclose( $fp );
-			error_log( sprintf( "Exported %s results to {$args[0]}", count( $data ) ) );
+			image_quality_chooser_log_message( sprintf( "Exported %s results to {$args[0]}", count( $data ) ) );
 		}
 	}
 

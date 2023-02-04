@@ -2,8 +2,6 @@
  * JavaScript for the settings page of the Image Quality Chooser game.
  */
 ( function () {
-
-	console.log( 'admin' );
 	// Listen for clicks on the three buttons: export, setup and reset.
 	document.addEventListener( 'click', function ( event ) {
 		var target = event.target;

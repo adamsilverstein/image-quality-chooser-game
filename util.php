@@ -56,7 +56,6 @@ function image_quality_chooser_game_generate_images() {
 
 		// Skip already completed images.
 		if ( in_array( $image, $completed_images ) ) {
-			error_log( "skipping $image" );
 			continue;
 		}
 		// Set the quality for each iteration.

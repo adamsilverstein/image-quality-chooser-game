@@ -10,9 +10,6 @@ add_action( 'rest_api_init', function() {
 			$params = $request->get_json_params();
 			$action = $params['action'];
 
-			// Log the action.
-			error_log( 'Action: ' . $action );
-
 			// Handle the action: one of setup, export or reset.
 			switch ( $action ) {
 				case 'setup':
@@ -67,9 +64,6 @@ add_action( 'rest_api_init', function() {
 				'filename'        => $comparison_data['original-filename'],
 				'filesize'        => $comparison_data['original-filesize'],
 			);
-
-			// Log the choices.
-			error_log( print_r( $current_choice, true ) );
 
 			$choices[] = $current_choice;
 

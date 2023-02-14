@@ -21,7 +21,11 @@
 			xhr.send( JSON.stringify( { 'action': action } ) );
 
 			// Handle success and failure.
-			xhr.onload = function () {
+			xhr.onload = function ( ) {
+				let res = JSON.parse( xhr.response );
+				if ( res.file ) {
+					document.location = res.file;
+				}
 			}
 		}
 	} )

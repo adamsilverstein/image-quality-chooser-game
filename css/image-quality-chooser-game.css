@@ -11,6 +11,7 @@
 
  .image-quality-chooser-game.image-quality-chooser-game__highlight {
 	background-color: #eee;
+	transition: background-color 0.25s ease;
 }
 
 .image-quality-chooser-game__image_wrapper {

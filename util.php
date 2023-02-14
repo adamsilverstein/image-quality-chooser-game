@@ -242,3 +242,21 @@ function image_quality_chooser_reset_game_choices() {
 function image_quality_chooser_reset_completed_images() {
 	return delete_option( 'image_quality_chooser_completed_images' );
 }
+
+
+/**
+ * Export the choices to a CSV file.
+ */
+function image_quality_chooser_export_game_data( $out = null ) {
+	$data = get_option( 'image-quality-chooser-game-choices', array() );
+	// If $out is unset, use a temporary file.
+	if ( ! $out ) {
+		$out = tempnam( sys_get_temp_dir(), 'iqc' );
+	}
+	$fp = fopen( $out, 'w' );
+	foreach ( $data as $fields ) {
+		fputcsv( $fp, $fields );
+	}
+	fclose( $fp );
+	return $out;
+}

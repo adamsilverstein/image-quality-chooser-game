@@ -50,6 +50,9 @@ add_action( 'template_redirect', function() {
 	exit;
 } );
 
+// Require the util file.
+require_once __DIR__ . '/util.php';
+
 // Require the REST API file.
 require_once __DIR__ . '/rest.php';
 
@@ -59,9 +62,6 @@ require_once __DIR__ . '/rest.php';
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	require_once __DIR__ . '/cli.php';
 }
-
-// Require the util file.
-require_once __DIR__ . '/util.php';
 
 // Require the settings screen file.
 require_once __DIR__ . '/settings.php';

@@ -5,38 +5,56 @@
  */
 add_action( 'rest_api_init', function() {
 	register_rest_route( 'image-quality-chooser-game/v1', '/settings', [
-		'methods'  => [ 'POST' ],
-		'callback' => function( WP_REST_Request $request ) {
-			$params = $request->get_json_params();
-			$action = $params['action'];
-
-			// Log the action.
-			error_log( 'Action: ' . $action );
-
-			// Handle the action: one of setup, export or reset.
-			switch ( $action ) {
-				case 'setup':
-					// Setup the game images.
-					image_quality_chooser_game_generate_images();
-					break;
-				case 'export':
-					// Export the game data.
-					image_quality_chooser_export_game_data();
-					break;
-				case 'reset':
-					// Reset all game data.
-					image_quality_chooser_reset_game_data();
-					image_quality_chooser_reset_game_choices();
-					image_quality_chooser_reset_completed_images();
-					break;
-				case 'reset-results':
-					// Reset the game (choices) data.
-					image_quality_chooser_reset_game_choices();
-					break;
-			}
-		},
+		'methods'  => [ 'POST', 'GET' ],
+		'callback' => 'image_quality_chooser_settings_callback',
 		'permission_callback' => '__return_true',
 	] );
+
+	/**
+	 * Add a callback for the settings route.
+	 */
+	function image_quality_chooser_settings_callback( WP_REST_Request $request ) {
+		$response = new WP_REST_Response;
+
+		$params = $request->get_json_params();
+		$action = $params['action'];
+
+		// Handle the action: one of setup, export or reset.
+		switch ( $action ) {
+			case 'setup':
+				// Setup the game images.
+				image_quality_chooser_game_generate_images();
+				break;
+			case 'export':
+				// A temporary file in the wp-0ontent folder.
+				$filename = wp_unique_filename( wp_get_upload_dir(), 'output.csv' );
+				$upload = wp_get_upload_dir();
+				// Export the game data.
+				$file = image_quality_chooser_export_game_data( $upload[ 'path' ] . "/" . $filename );
+				if ( file_exists( $file ) ) {
+					// Image exists, prepare a binary-data response.
+					$response->set_data( file_get_contents( $file ) );
+				}
+
+				// Return te file to the request.
+				return  array(
+					'file' => $upload[ 'url' ] . "/" . $filename,
+					'status' => 200,
+				);
+			case 'reset':
+				// Reset all game data.
+				image_quality_chooser_reset_game_data();
+				image_quality_chooser_reset_game_choices();
+				image_quality_chooser_reset_completed_images();
+				break;
+			case 'reset-results':
+				// Reset the game (choices) data.
+				image_quality_chooser_reset_game_choices();
+				break;
+		}
+	}
+
+
 	/**
 	 * Register the endpoint to collect choices.
 	 */
@@ -67,9 +85,6 @@ add_action( 'rest_api_init', function() {
 				'filename'        => $comparison_data['original-filename'],
 				'filesize'        => $comparison_data['original-filesize'],
 			);
-
-			// Log the choices.
-			error_log( print_r( $current_choice, true ) );
 
 			$choices[] = $current_choice;
 

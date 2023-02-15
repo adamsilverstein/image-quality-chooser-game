@@ -2,8 +2,6 @@
  * JavaScript for the settings page of the Image Quality Chooser game.
  */
 ( function () {
-
-	console.log( 'admin' );
 	// Listen for clicks on the three buttons: export, setup and reset.
 	document.addEventListener( 'click', function ( event ) {
 		var target = event.target;
@@ -23,7 +21,11 @@
 			xhr.send( JSON.stringify( { 'action': action } ) );
 
 			// Handle success and failure.
-			xhr.onload = function () {
+			xhr.onload = function ( ) {
+				let res = JSON.parse( xhr.response );
+				if ( res.file ) {
+					document.location = res.file;
+				}
 			}
 		}
 	} )

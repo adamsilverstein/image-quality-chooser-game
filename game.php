@@ -159,11 +159,6 @@ function image_quality_chooser_game_display() {
 	// Log time so far.
 	$so_far_time = microtime( true );
 
-	// Log the image URLs.
-	error_log( 'Left image URL: ' . $image_1_image_url );
-	error_log( 'Right image URL: ' . $image_2_image_url );
-
-
 	wp_enqueue_script( 'image-quality-chooser', plugins_url( '/js/image-quality-chooser-game.js', __FILE__ ), [], '1.0.0', true );
 	wp_enqueue_style( 'image-quality-chooser', plugins_url( '/css/image-quality-chooser-game.css', __FILE__ ), [], '1.0.0' );
 

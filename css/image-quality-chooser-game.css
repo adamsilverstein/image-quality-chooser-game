@@ -103,19 +103,24 @@ button.image-quality-chooser-game__button_selected {
 	font-weight: bold;
 }
 
-.image-quality-chooser-game.image-quality-chooser-game__complete .image-quality-chooser-game__image.image-quality-chooser-game__winner {
+.image-quality-chooser-game.image-quality-chooser-game__complete .image-quality-chooser-game__image.WebP{
 	border: 5px solid #4CAF50;
 	background-color: #f1fff1;
 }
 
-.image-quality-chooser-game.image-quality-chooser-game__complete .image-quality-chooser-game__image:not(.image-quality-chooser-game__winner):not(.image-quality-chooser-game__image_original) {
-	border: 5px solid #4CAF50;
-	background-color: #f1fff1;
+.image-quality-chooser-game.image-quality-chooser-game__complete .image-quality-chooser-game__image.JPEG {
+	border: 5px solid #70731d;
+	background-color: #f6fdce;
 }
 
 
 #image-quality-chooser-image-2 {
 	display: none;
+}
+
+.image-quality-chooser-game__footer-instructions {
+	text-align: center;
+	font-size: 18px;
 }
 
 .image-quality-chooser-game__image_header {

@@ -15,12 +15,12 @@ function image_quality_chooser_game_generate_images() {
 		return $game_data;
 	}
 	$qualities = array(
-		70,
-		75,
+		67,
+		72,
+		77,
 		82, // Default for JPEG.
-		84,
-		86,
-		90,
+		87,
+		92,
 	);
 	$formats = array(
 		'jpeg',

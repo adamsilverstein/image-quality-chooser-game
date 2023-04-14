@@ -31,7 +31,7 @@ add_action( 'rest_api_init', function() {
 				$upload = wp_get_upload_dir();
 				// Export the game data.
 				$file = image_quality_chooser_export_game_data( $upload[ 'path' ] . "/" . $filename );
-				if ( file_exists( $file ) ) {
+				if ( $file && file_exists( $file ) ) {
 					// Image exists, prepare a binary-data response.
 					$response->set_data( file_get_contents( $file ) );
 				}

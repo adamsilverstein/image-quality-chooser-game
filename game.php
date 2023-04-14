@@ -108,22 +108,33 @@ function image_quality_chooser_game_display() {
 
 		$experiment_filename = $filenames[ array_rand( $filenames ) ];
 
-		// Pick the left and right images mime types..
-		$image_1_mime  = $mimes[ array_rand( $mimes ) ];
-		$image_2_mime = $mimes[ array_rand( $mimes ) ];
+		// Use WebP for the comparison images.
+		$image_1_mime = 'image/webp';
+		$image_2_mime = 'image/webp';
 
-		// Pick the left and right quality.
+		// Pick two different qualities.
 		$image_1_quality  = $qualities[ array_rand( $qualities ) ];
 		$image_2_quality = $qualities[ array_rand( $qualities ) ];
 
 		// Avoid too similar images.
-		if ( abs( $image_1_quality - $image_2_quality ) < 5 ) {
+		if ( abs( $image_1_quality - $image_2_quality ) < 10 ) {
 			continue;
 		}
 
 		// Pick the left and right images engines.
 		$image_1_engine  = $engines[ array_rand( $engines ) ];
 		$image_2_engine = $engines[ array_rand( $engines ) ];
+
+		// Reset one of the images randomly to the default jpeg 82 image.
+		if ( rand( 0, 1 ) ) {
+			$image_1_engine = 'GD';
+			$image_1_mime = 'image/jpeg';
+			$image_1_quality = 82;
+		} else {
+			$image_2_engine = 'GD';
+			$image_2_mime = 'image/jpeg';
+			$image_2_quality = 82;
+		}
 
 		// Calculate the filenames for the left and right images.
 		$image_1_name  = image_quality_chooser_make_name( $experiment_filename, $experiment_size, $image_1_engine, $image_1_mime, $image_1_quality );
@@ -132,8 +143,8 @@ function image_quality_chooser_game_display() {
 		if ( empty ( $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_1_engine ][ $image_1_mime ][ $image_1_quality ] ) ) {
 			continue;
 		} else {
-			$image_1_image      = $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_1_engine ][ $image_1_mime ][ $image_1_quality ]['attachment_id'];
-			$image_1_size = $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_1_engine ][ $image_1_mime ][ $image_1_quality ]['filesize'];
+			$image_1_image = $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_1_engine ][ $image_1_mime ][ $image_1_quality ]['attachment_id'];
+			$image_1_size  = $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_1_engine ][ $image_1_mime ][ $image_1_quality ]['filesize'];
 		}
 
 		if ( empty ( $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_2_engine ][ $image_2_mime ][ $image_2_quality ] ) ) {
@@ -149,6 +160,17 @@ function image_quality_chooser_game_display() {
 		// Find the original image url from the filename.
 		$original_image_url = wp_get_attachment_image_src( $game_image_data[ $experiment_filename ]['attachment_id'] );
 		$original_image_filesize = $game_image_data[ $experiment_filename ]['filesize'];
+
+
+		// Try loading both images to make sure they are available.
+		/*
+		$image_1 = wp_remote_get( $image_1_image_url );
+		$image_2 = wp_remote_get( $image_2_image_url );
+
+		if ( is_wp_error( $image_1 ) || is_wp_error( $image_2 ) ) {
+			continue;
+		}
+		*/
 
 		// Continue if we have distinct left and right images.
 		if ( ! empty( $image_1_image_url ) && ! empty( $image_2_image_url ) && $image_1_image !== $image_2_image ) {

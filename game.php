@@ -202,7 +202,7 @@ function image_quality_chooser_game_display() {
 	<div id="image-quality-chooser-game-data" data-wp-nonce="<?php echo $wp_nonce ?>" data-game-size="<?php echo $experiment_size; ?>" data-game-filename="<?php echo $experiment_filename; ?>" data-original-filesize="<?php echo $original_image_filesize ?>"></div>
 	<div class="image-quality-chooser-game__instructions">
 		<h1>Which image is more similar to the original?</h1>
-		<p>Press the <em>1</em> and <em>2</em> keys to swap the left image. Press <em>z</em> to toggle zoom</p>
+		<p><b>Instructions:</b> Press the <em>1</em> and <em>2</em> keys to swap the left image. Press <em>z</em> to toggle zoom</p>
 		<p>
 			Your choice:
 			<button id="image-quality-chooser-image-1-button" class="image-quality-chooser-game__button" data-selection="1">Image 1</button>
@@ -211,7 +211,7 @@ function image_quality_chooser_game_display() {
 		</p>
 	</div>
 		<div id="image-quality-chooser-game" class="image-quality-chooser-game">
-			<div class="image-quality-chooser-left-image image-quality-chooser-game__image" id="image-quality-chooser-image-1">
+			<div class="image-quality-chooser-left-image image-quality-chooser-game__image <?php echo $image_format_names[ $image_1_mime ]; ?>" id="image-quality-chooser-image-1">
 				<div class="image-quality-chooser-game__image_header" >
 					Image 1
 				</div>
@@ -222,7 +222,7 @@ function image_quality_chooser_game_display() {
 					<img src="<?php echo $image_1_image_url; ?>" data-image="<?php echo $image_1_image ?>" data-mime="<?php echo $image_1_mime; ?>" data-quality="<?php echo $image_1_quality ?>" data-engine="<?php echo $image_1_engine ?>" data-size="<?php echo $image_1_size ?>" class="image-quality-chooser-game__image_tag">
 				</div>
 			</div>
-			<div class="image-quality-chooser-left-image image-quality-chooser-game__image" id="image-quality-chooser-image-2">
+			<div class="image-quality-chooser-left-image image-quality-chooser-game__image <?php echo $image_format_names[ $image_2_mime ]; ?>" id="image-quality-chooser-image-2">
 				<div class="image-quality-chooser-game__image_header">
 					Image 2
 				</div>
@@ -246,14 +246,14 @@ function image_quality_chooser_game_display() {
 					</div>
 				</div>
 			</div>
-
 		</div>
 
 		<div class="image-quality-chooser-game__results image-quality-chooser-game__CTA">
-			Download the Performance Lab Plugin to test!<br />
-			<img src="<?php echo plugins_url( '/images/download-the-performance-lab-plugin-small.png', __FILE__ ) ?>" width=150 height=150>
+			Download the WebP Uploads plugin to test!<br />
+			<img src="<?php echo plugins_url( '/images/qrcode_wordpress.org.png', __FILE__ ) ?>" width=150 height=150>
 		</div>
 		<div id="image-quality-chooser-reload-timer"></div>
+		<p class="image-quality-chooser-game__footer-instructions">One image is the default JPEG 82 Quality image and the other is a WebP image with a quality between 60 and 95.</p>
 
 	</div>
 	<?php wp_footer(); ?>

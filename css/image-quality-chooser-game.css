@@ -3,7 +3,7 @@
 	justify-content: space-around;
 	align-items: center;
 	margin: auto;
-	width: 2088px;
+	width: 100%;
 	background-color: transparent;
 	transition: background-color 0.25s ease;
 	border: 5px solid transparent;
@@ -15,14 +15,23 @@
 }
 
 .image-quality-chooser-game__image_wrapper {
-	width: 1024px;
-	height: 800px;
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-bottom: 1rem;
 	overflow: hidden;
+	width: 45vw;
+	height: 45vh;
 }
-img.image-quality-chooser-game__image_tag {
+
+.image-quality-chooser-game__image_wrapper img {
+	max-width: 100%;
+	height: auto;
+	object-fit: contain;
 	cursor: pointer;
-	width:1024px;
 }
+
 
 .zoom .image-quality-chooser-game__image img {
 	transform: scale(2);
@@ -32,7 +41,6 @@ img.image-quality-chooser-game__image_tag {
 button {
 	width: auto;
 	font-size: 28px;
-	cursor: pointer;
 	margin: 10px;
 	padding: 10px;
 }
@@ -95,21 +103,24 @@ button.image-quality-chooser-game__button_selected {
 	font-weight: bold;
 }
 
-/* Add a green border and very light green background to the winning image */
-.image-quality-chooser-game.image-quality-chooser-game__complete .image-quality-chooser-game__image.image-quality-chooser-game__winner {
+.image-quality-chooser-game.image-quality-chooser-game__complete .image-quality-chooser-game__image.WebP{
 	border: 5px solid #4CAF50;
 	background-color: #f1fff1;
 }
 
-/* Add a red border and very light red background to the losing image */
-.image-quality-chooser-game.image-quality-chooser-game__complete .image-quality-chooser-game__image:not(.image-quality-chooser-game__winner):not(.image-quality-chooser-game__image_original) {
-	border: 5px solid #f44336;
-	background-color: #ffebeb;
+.image-quality-chooser-game.image-quality-chooser-game__complete .image-quality-chooser-game__image.JPEG {
+	border: 5px solid #70731d;
+	background-color: #f6fdce;
 }
 
 
 #image-quality-chooser-image-2 {
 	display: none;
+}
+
+.image-quality-chooser-game__footer-instructions {
+	text-align: center;
+	font-size: 18px;
 }
 
 .image-quality-chooser-game__image_header {

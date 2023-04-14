@@ -15,12 +15,12 @@ function image_quality_chooser_game_generate_images() {
 		return $game_data;
 	}
 	$qualities = array(
-		70,
-		75,
-		82,
-		84,
-		86,
-		90,
+		67,
+		72,
+		77,
+		82, // Default for JPEG.
+		87,
+		92,
 	);
 	$formats = array(
 		'jpeg',
@@ -96,29 +96,37 @@ function image_quality_chooser_game_generate_images() {
 					$image_variation = image_quality_chooser_make_name( basename( $image ), 'orig', $format,  $engine,  $quality );
 
 					// Log the image variation.
-					image_quality_chooser_log_message( sprintf( 'Processed variation %s of %s (%s)', $count, $remaining, $image_variation ) );
+					image_quality_chooser_log_message(
+						sprintf(
+							'Processed variation %s of %s (%s)',
+							$count,
+							$remaining,
+							$image_variation
+						)
+					);
 					$count++;
 
 					$attach_id = media_sideload_image( $plugin_image_url, 0, $image_variation, 'id' );
 					$attach_data = wp_get_attachment_metadata( $attach_id );
-
-					$sizes = array();
-					foreach( image_quality_chooser_get_sizes() as $size ) {
-						$sizes[ $size ] = $attach_data['sizes'][ $size ];
+					if ( isset ( $attach_data['file'] ) ) {
+						$sizes = array();
+						foreach( image_quality_chooser_get_sizes() as $size ) {
+							$sizes[ $size ] = $attach_data['sizes'][ $size ];
+						}
+						$game_data[] = array(
+							'attachment_id' => $attach_id,
+							'upload_file'   => $attach_data['file'],
+							'filename'      => $image,
+							'source_mime'   => 'image/jpeg', // Originals are all jpeg.
+							'output_mime'   => $mime_type,
+							'engine'        => $engine,
+							'quality'       => $quality,
+							'filesize'      => $attach_data['filesize'],
+							'width'         => $attach_data['width'],
+							'height'        => $attach_data['height'],
+							'sizes'         => $sizes,
+						);
 					}
-					$game_data[] = array(
-						'attachment_id' => $attach_id,
-						'upload_file'   => $attach_data['file'],
-						'filename'      => $image,
-						'source_mime'   => 'image/jpeg', // Originals are all jpeg.
-						'output_mime'   => $mime_type,
-						'engine'        => $engine,
-						'quality'       => $quality,
-						'filesize'      => $attach_data['filesize'],
-						'width'         => $attach_data['width'],
-						'height'        => $attach_data['height'],
-						'sizes'         => $sizes,
-					);
 					remove_all_filters( 'image_editor_output_format' );
 				}
 				remove_all_filters( 'wp_image_editors' );
@@ -185,7 +193,11 @@ function image_quality_chooser_set_game_data( $game_data ) {
  * @return array $game_data The game data.
  */
 function image_quality_chooser_get_game_data() {
-	return get_option( 'image_quality_chooser_game_data' );
+	$data = get_option( 'image_quality_chooser_game_data' );
+	if ( ! $data ) {
+		$data = array();
+	}
+	return $data;
 }
 
 /**
@@ -249,6 +261,10 @@ function image_quality_chooser_reset_completed_images() {
  */
 function image_quality_chooser_export_game_data( $out = null ) {
 	$data = get_option( 'image-quality-chooser-game-choices', array() );
+	if ( empty( $data ) ) {
+		return false;
+	}
+
 	// If $out is unset, use a temporary file.
 	if ( ! $out ) {
 		$out = tempnam( sys_get_temp_dir(), 'iqc' );

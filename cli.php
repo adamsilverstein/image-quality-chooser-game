@@ -41,7 +41,7 @@ class Create_Test_Images_Command extends WP_CLI_Command {
 			WP_CLI::success( 'Imported images' );
 		} else {
 			// Update the user with progress: finished processing folder.
-			WP_CLI::error( 'No images imported' );
+			WP_CLI::error( 'Game date found, image import complete' );
 		}
 	}
 }
@@ -68,8 +68,11 @@ class Create_Test_Images_Command extends WP_CLI_Command {
 		 * @when before_wp_load
 		 */
 		public function __invoke( $args, $assoc_args ) {
-			image_quality_chooser_export_game_data( $args[0] );
-			image_quality_chooser_log_message( sprintf( "Exported %s results to {$args[0]}", count( $data ) ) );
+			$file = image_quality_chooser_export_game_data( $args[0] );
+			if ( $file ) {
+				image_quality_chooser_log_message( sprintf( "Exported %s results to {$args[0]}", count( $data ) ) );
+
+			}
 		}
 	}
 

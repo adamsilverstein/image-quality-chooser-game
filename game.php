@@ -108,22 +108,33 @@ function image_quality_chooser_game_display() {
 
 		$experiment_filename = $filenames[ array_rand( $filenames ) ];
 
-		// Pick the left and right images mime types..
-		$image_1_mime  = $mimes[ array_rand( $mimes ) ];
-		$image_2_mime = $mimes[ array_rand( $mimes ) ];
+		// Use WebP for the comparison images.
+		$image_1_mime = 'image/webp';
+		$image_2_mime = 'image/webp';
 
-		// Pick the left and right quality.
+		// Pick two different qualities.
 		$image_1_quality  = $qualities[ array_rand( $qualities ) ];
 		$image_2_quality = $qualities[ array_rand( $qualities ) ];
 
 		// Avoid too similar images.
-		if ( abs( $image_1_quality - $image_2_quality ) < 5 ) {
+		if ( abs( $image_1_quality - $image_2_quality ) < 10 ) {
 			continue;
 		}
 
 		// Pick the left and right images engines.
 		$image_1_engine  = $engines[ array_rand( $engines ) ];
 		$image_2_engine = $engines[ array_rand( $engines ) ];
+
+		// Reset one of the images randomly to the default jpeg 82 image.
+		if ( rand( 0, 1 ) ) {
+			$image_1_engine = 'GD';
+			$image_1_mime = 'image/jpeg';
+			$image_1_quality = 82;
+		} else {
+			$image_2_engine = 'GD';
+			$image_2_mime = 'image/jpeg';
+			$image_2_quality = 82;
+		}
 
 		// Calculate the filenames for the left and right images.
 		$image_1_name  = image_quality_chooser_make_name( $experiment_filename, $experiment_size, $image_1_engine, $image_1_mime, $image_1_quality );
@@ -132,8 +143,8 @@ function image_quality_chooser_game_display() {
 		if ( empty ( $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_1_engine ][ $image_1_mime ][ $image_1_quality ] ) ) {
 			continue;
 		} else {
-			$image_1_image      = $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_1_engine ][ $image_1_mime ][ $image_1_quality ]['attachment_id'];
-			$image_1_size = $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_1_engine ][ $image_1_mime ][ $image_1_quality ]['filesize'];
+			$image_1_image = $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_1_engine ][ $image_1_mime ][ $image_1_quality ]['attachment_id'];
+			$image_1_size  = $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_1_engine ][ $image_1_mime ][ $image_1_quality ]['filesize'];
 		}
 
 		if ( empty ( $game_image_data[ $experiment_filename ][ $experiment_size ][ $image_2_engine ][ $image_2_mime ][ $image_2_quality ] ) ) {
@@ -149,6 +160,17 @@ function image_quality_chooser_game_display() {
 		// Find the original image url from the filename.
 		$original_image_url = wp_get_attachment_image_src( $game_image_data[ $experiment_filename ]['attachment_id'] );
 		$original_image_filesize = $game_image_data[ $experiment_filename ]['filesize'];
+
+
+		// Try loading both images to make sure they are available.
+		/*
+		$image_1 = wp_remote_get( $image_1_image_url );
+		$image_2 = wp_remote_get( $image_2_image_url );
+
+		if ( is_wp_error( $image_1 ) || is_wp_error( $image_2 ) ) {
+			continue;
+		}
+		*/
 
 		// Continue if we have distinct left and right images.
 		if ( ! empty( $image_1_image_url ) && ! empty( $image_2_image_url ) && $image_1_image !== $image_2_image ) {
@@ -180,7 +202,7 @@ function image_quality_chooser_game_display() {
 	<div id="image-quality-chooser-game-data" data-wp-nonce="<?php echo $wp_nonce ?>" data-game-size="<?php echo $experiment_size; ?>" data-game-filename="<?php echo $experiment_filename; ?>" data-original-filesize="<?php echo $original_image_filesize ?>"></div>
 	<div class="image-quality-chooser-game__instructions">
 		<h1>Which image is more similar to the original?</h1>
-		<p>Press the <em>1</em> and <em>2</em> keys to swap the left image. Press <em>z</em> to toggle zoom</p>
+		<p><b>Instructions:</b> Press the <em>1</em> and <em>2</em> keys to swap the left image. Press <em>z</em> to toggle zoom</p>
 		<p>
 			Your choice:
 			<button id="image-quality-chooser-image-1-button" class="image-quality-chooser-game__button" data-selection="1">Image 1</button>
@@ -189,7 +211,7 @@ function image_quality_chooser_game_display() {
 		</p>
 	</div>
 		<div id="image-quality-chooser-game" class="image-quality-chooser-game">
-			<div class="image-quality-chooser-left-image image-quality-chooser-game__image" id="image-quality-chooser-image-1">
+			<div class="image-quality-chooser-left-image image-quality-chooser-game__image <?php echo $image_format_names[ $image_1_mime ]; ?>" id="image-quality-chooser-image-1">
 				<div class="image-quality-chooser-game__image_header" >
 					Image 1
 				</div>
@@ -200,7 +222,7 @@ function image_quality_chooser_game_display() {
 					<img src="<?php echo $image_1_image_url; ?>" data-image="<?php echo $image_1_image ?>" data-mime="<?php echo $image_1_mime; ?>" data-quality="<?php echo $image_1_quality ?>" data-engine="<?php echo $image_1_engine ?>" data-size="<?php echo $image_1_size ?>" class="image-quality-chooser-game__image_tag">
 				</div>
 			</div>
-			<div class="image-quality-chooser-left-image image-quality-chooser-game__image" id="image-quality-chooser-image-2">
+			<div class="image-quality-chooser-left-image image-quality-chooser-game__image <?php echo $image_format_names[ $image_2_mime ]; ?>" id="image-quality-chooser-image-2">
 				<div class="image-quality-chooser-game__image_header">
 					Image 2
 				</div>
@@ -224,14 +246,14 @@ function image_quality_chooser_game_display() {
 					</div>
 				</div>
 			</div>
-
 		</div>
 
 		<div class="image-quality-chooser-game__results image-quality-chooser-game__CTA">
-			Download the Performance Lab Plugin to test!<br />
-			<img src="<?php echo plugins_url( '/images/download-the-performance-lab-plugin-small.png', __FILE__ ) ?>" width=150 height=150>
+			Download the WebP Uploads plugin to test!<br />
+			<img src="<?php echo plugins_url( '/images/qrcode_wordpress.org.png', __FILE__ ) ?>" width=150 height=150>
 		</div>
 		<div id="image-quality-chooser-reload-timer"></div>
+		<p class="image-quality-chooser-game__footer-instructions">One image is the default JPEG 82 Quality image and the other is a WebP image with a quality between 60 and 95.</p>
 
 	</div>
 	<?php wp_footer(); ?>
